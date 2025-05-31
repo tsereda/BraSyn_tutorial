@@ -74,6 +74,15 @@ def infer(data_path, output_path, parameters_file, weights, save_back = False):
         id = int(str_id)
         if id >= 0:
             opt.gpu_ids.append(id)
+
+    # DEBUG: Check if GPU is actually being used
+    print(f"GPU IDs set to: {opt.gpu_ids}")
+    if len(opt.gpu_ids) > 0:
+        torch.cuda.set_device(opt.gpu_ids[0])
+        print(f"CUDA device set to: {torch.cuda.get_device_name(0)}")
+    else:
+        print("WARNING: No GPU configured!")
+        
     if len(opt.gpu_ids) > 0:
         torch.cuda.set_device(opt.gpu_ids[0])
     
@@ -101,6 +110,12 @@ def infer(data_path, output_path, parameters_file, weights, save_back = False):
                 
                 model.data_dependent_initialize(data)
                 model.setup(opt)               # regular setup: load and print networks; create schedulers
+                # Check model device
+                model_device = next(model.netG.parameters()).device
+                print(f"Model is on: {model_device}")
+
+                # Check data device  
+                print(f"Input data is on: {data['A'].device}")
                 model.parallelize()
                 if opt.eval:
                     model.eval()
