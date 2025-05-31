@@ -28,7 +28,7 @@ spec:
           #synapse config
           #synapse get -r syn51514105 
 
-          git clone -b calc-affine-orientation https://github.com/tsereda/BraSyn_tutorial.git ${REPO_PATH}
+          git clone https://github.com/tsereda/BraSyn_tutorial.git ${REPO_PATH}
           cd ${REPO_PATH}
 
           cp /data/ASNR-MICCAI-BraTS2023-GLI-Challenge-TrainingData.zip .
