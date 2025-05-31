@@ -151,14 +151,20 @@ class brain3DRandomModDataset(BaseDataset):
 
         # fix the bug with affine matrix
         affine = affines[A_keys[0]]
+        # For test phase, we need to reorient the affine matrix properly
+        # Get the image data shape from the first volume to use for affine correction
+        sample_vol = vols[A_keys[0]]
+        sample_data = sample_vol.get_fdata()
+        
         # Get current orientation from affine
         orig_ornt = nib.orientations.io_orientation(affine)
-        # Get target orientation
+        # Get target orientation  
         targ_ornt = nib.orientations.axcodes2ornt("IPL")
         # Calculate the transform between orientations
         ornt_transform = nib.orientations.ornt_transform(orig_ornt, targ_ornt)
-        # Apply the transform to get the corrected affine
-        affine = nib.orientations.inv_ornt_aff(ornt_transform, affine.shape[:3])
+        # Apply the transform to get the corrected affine using the actual data shape
+        aff_trans = nib.orientations.inv_ornt_aff(ornt_transform, sample_data.shape)
+        affine = np.dot(affine, aff_trans)
         
         A = torch.concat(As, dim=0)
         # print("A shape: ", A.shape)
