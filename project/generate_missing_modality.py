@@ -18,6 +18,8 @@ from skimage.metrics import peak_signal_noise_ratio as psnr
 import torch
 import nibabel as nib
 from data.image_folder import get_available_3d_vol_names, POST_FIXES
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 for_segmentation_names = {"t1c": "t1ce", "t1n": "t1", "t2f": "flair", "t2w": "t2"}
 
 class OPTIONS:
