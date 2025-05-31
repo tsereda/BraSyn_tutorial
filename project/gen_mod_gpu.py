@@ -1,3 +1,57 @@
+from util.crop_and_pad_volume import crop_or_pad_volume_to_size_along_x, crop_or_pad_volume_to_size_along_y, crop_or_pad_volume_to_size_along_z
+import os
+from data import create_dataset
+from models import create_model
+from util.visualizer import save_3D_images, save_images
+from util import html
+from util.ssim import ssim
+from tqdm import tqdm
+import numpy as np
+from scipy.stats import wilcoxon
+from models.networks import setDimensions
+from torchvision import transforms
+from data.data_augmentation_3D import  PadIfNecessary, getBetterOrientation, toGrayScale
+from skimage.metrics import peak_signal_noise_ratio as psnr
+import torch
+import nibabel as nib
+from data.image_folder import get_available_3d_vol_names, POST_FIXES
+
+for_segmentation_names = {"t1c": "t1ce", "t1n": "t1", "t2f": "flair", "t2w": "t2"}
+
+class OPTIONS:
+    def __init__(self) -> None:
+        self.dataroot = ""
+        self.output_dir = ""
+
+def convert_image_to_256_3d(x):
+    # x, [1, 1, 144, 192, 192]
+    #batch_size = 1
+    #channels = 1
+    shape = x.shape
+    x = x.squeeze()
+    x = crop_or_pad_volume_to_size_along_x(x, 240)
+    x = crop_or_pad_volume_to_size_along_y(x, 240)
+    x = crop_or_pad_volume_to_size_along_z(x, 155)
+    return torch.unsqueeze(torch.unsqueeze(x, 0), 0) # x, [1,1, 256, 256, 256]
+
+def save_to_output(x, affine,  A1_path, output_target_path, test_target_modality, for_segmentation = False):
+    # pass 
+    x = x.squeeze()
+    img = nib.Nifti1Image(x.numpy(), affine.squeeze().numpy())
+    patient_name = A1_path.split('/')[-2]
+    # os.makedirs(os.path.join( output_target_path), exist_ok=True)
+    # print("img shape", img.shape)
+    if for_segmentation:
+        test_target_modality = "brain" + "_" + for_segmentation_names[test_target_modality]
+    
+        nib.save(img, os.path.join( output_target_path, patient_name,
+                patient_name + "_" + test_target_modality + ".nii.gz") )
+    else:
+        out_path = os.path.join( output_target_path,
+                 patient_name + "-" + test_target_modality + ".nii.gz")
+        # print(out_path)
+        nib.save(img,  out_path )
+
 def infer(data_path, output_path, parameters_file, weights, save_back = False):
     # get test options
     opt = OPTIONS()
