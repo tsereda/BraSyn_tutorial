@@ -33,7 +33,7 @@ spec:
           7z x ASNR-MICCAI-BraTS2023-GLI-Challenge-TrainingData.zip -y -mmt=$(nproc)
           7z x ASNR-MICCAI-BraTS2023-GLI-Challenge-ValidationData -y -mmt=$(nproc)
 
-          git clone https://github.com/tsereda/BraSyn_tutorial.git ${REPO_PATH}
+          git clone -b run_ https://github.com/tsereda/BraSyn_tutorial.git ${REPO_PATH}
           cd ${REPO_PATH}
 
           mamba create -n brasyn python=3.10 -y

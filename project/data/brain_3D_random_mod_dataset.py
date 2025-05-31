@@ -151,8 +151,14 @@ class brain3DRandomModDataset(BaseDataset):
 
         # fix the bug with affine matrix
         affine = affines[A_keys[0]]
+        # Get current orientation from affine
+        orig_ornt = nib.orientations.io_orientation(affine)
+        # Get target orientation
         targ_ornt = nib.orientations.axcodes2ornt("IPL")
-        affine = nib.orientations.ornt_transform(affine, targ_ornt)
+        # Calculate the transform between orientations
+        ornt_transform = nib.orientations.ornt_transform(orig_ornt, targ_ornt)
+        # Apply the transform to get the corrected affine
+        affine = nib.orientations.inv_ornt_aff(ornt_transform, affine.shape[:3])
         
         A = torch.concat(As, dim=0)
         # print("A shape: ", A.shape)
