@@ -4,7 +4,6 @@ metadata:
   name: brats-pod
 spec:
   nodeSelector:
-    topology.kubernetes.io/zone: sdsu-rci
     topology.kubernetes.io/region: us-west
   containers:
     - name: brats-processing
