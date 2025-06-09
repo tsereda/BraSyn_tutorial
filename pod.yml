@@ -21,27 +21,43 @@ spec:
         - "-c"
       args:
         - |
-          sudo apt-get update && sudo apt-get install -y p7zip-full
-
+          sudo apt-get update && sudo apt-get install -y p7zip-full wget
+          
           #pip install synapseclient
           #synapse config
           #synapse get -r syn51514105 
-
+          
           git clone https://github.com/tsereda/BraSyn_tutorial.git ${REPO_PATH}
           cd ${REPO_PATH}
-
           cp /data/ASNR-MICCAI-BraTS2023-GLI-Challenge-TrainingData.zip .
           cp /data/ASNR-MICCAI-BraTS2023-GLI-Challenge-ValidationData.zip .
           7z x ASNR-MICCAI-BraTS2023-GLI-Challenge-TrainingData.zip -y -mmt=$(nproc)
           7z x ASNR-MICCAI-BraTS2023-GLI-Challenge-ValidationData.zip -y -mmt=$(nproc)
-
           mamba create -n brasyn python=3.10 -y
           mamba activate brasyn
           pip install -r project/requirements.txt
-
+          pip install nnunetv2 gdown simpleitk numpy batchgenerators
+          
           python drop_modality.py
           python project/generate_missing_modality.py
-      
+
+          export nnUNet_raw="/media/fabian/nnUNet_raw"
+          export nnUNet_preprocessed="/media/fabian/nnUNet_preprocessed"
+          export nnUNet_results="/media/fabian/nnUNet_results"
+          
+          echo "Downloading pre-trained nnUNet weights, dataset.json, and plan.json..."
+          gdown 1n9dqT114udr9Qq8iYEKsJK347iHg9N88
+          https://drive.google.com/file/d/1A_suxQwElucF3w1HEYg3wMo6dG9OxBHo/view?usp=drive_link
+          https://drive.google.com/file/d/1U2b0BTNi8zrJACReoi_W08Fe-wM394wI/view?usp=drive_link
+          
+          echo "Converting data to nnUNet format..."
+          python Dataset137_BraTS21.py
+
+          # obtain the predicted segmentation maps.
+          nnUNetv2_predict -i "./Dataset137_BraTS2021_test/imagesTr" -o "./outputs" -d 137 -c 3d_fullres -f 5
+          
+          python cal_avg_dice.py
+          
           sleep infinity
       volumeMounts:
         - name: git-repo
