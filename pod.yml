@@ -50,10 +50,32 @@ spec:
           mamba create -n brasyn python=3.10 -y
           mamba activate brasyn
           pip install -r project/requirements.txt
-          pip install nnunetv2 gdown simpleitk numpy batchgenerators
+          pip install nnunetv2 gdown simpleitk numpy batchgenerators blobfile wandb monai
           
           python drop_modality.py
-          python project/generate_missing_modality.py
+
+          cd ..
+          git clone -b inf https://github.com/tsereda/brats-synthesis.git
+          cd brats-synthesis
+          unzip /data/BraTSChekpoints.zip
+
+          mkdir -p ./checkpoints
+          cp BraTSCheckpoints/t1c/brats_*.pt ./checkpoints/
+          cp BraTSCheckpoints/t1n/brats_*.pt ./checkpoints/
+          cp BraTSCheckpoints/t2f/brats_*.pt ./checkpoints/
+          cp BraTSCheckpoints/t2w/brats_*.pt ./checkpoints/
+
+          #python project/generate_missing_modality.py
+          
+
+
+          python fast_cwdm/scripts/complete_dataset.py \
+            --input_dir ../BraSyn_tutorial/pseudo_val_set \
+            --checkpoint_dir ./checkpoints \
+            --device cuda:0
+
+
+
 
           export nnUNet_raw="/app/nnunet/raw"
           export nnUNet_preprocessed="/app/nnunet/preprocessed"
