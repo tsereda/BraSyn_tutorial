@@ -94,10 +94,6 @@ spec:
           echo "Converting data to nnUNet format..."
           python conv.py
 
-          echo "Setting up data symlink..."
-          # FIXED: Create proper symlink for data
-          ln -s ${REPO_PATH}/Dataset137_BraTS2021_inference $nnUNet_raw/Dataset137_BraTS2021
-
           # Add to ~/.bashrc for persistence
           echo 'export nnUNet_raw="/app/nnunet/raw"' >> ~/.bashrc
           echo 'export nnUNet_preprocessed="/app/nnunet/preprocessed"' >> ~/.bashrc
@@ -110,10 +106,11 @@ spec:
           echo "Model files:"
           ls -la $nnUNet_results/Dataset137_BraTS2021_inference/nnUNetTrainer__nnUNetPlans__3d_fullres/
           echo "Data files:"
-          ls -la $nnUNet_raw/Dataset137_BraTS2021/imagesTs/ | head -5
+          ls -la ${REPO_PATH}/Dataset137_BraTS2021_inference/imagesTs/ | head -5
 
           echo "Running nnUNet prediction..."
-          nnUNetv2_predict -i "$nnUNet_raw/Dataset137_BraTS2021/imagesTs" -o "./outputs" -d 137 -c 3d_fullres -f 5
+          # FIXED: Use direct path instead of symlink
+          nnUNetv2_predict -i "${REPO_PATH}/Dataset137_BraTS2021_inference/imagesTs" -o "./outputs" -d 137 -c 3d_fullres -f 5
 
           echo "Running evaluation..."
           python cal_avg_dice.py
