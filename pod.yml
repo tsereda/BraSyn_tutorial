@@ -100,7 +100,7 @@ spec:
           mv plans.json $nnUNet_results/Dataset137_BraTS2021/nnUNetTrainer__nnUNetPlans__3d_fullres/
 
           echo "Converting data to nnUNet format..."
-          python project/segmentation.py \
+          python segmentation.py \
             -i ../brats-synthesis/datasets/BRATS2023/pseudo_validation_completed \
             --gpu 0
 
