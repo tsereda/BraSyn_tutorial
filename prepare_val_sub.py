@@ -117,17 +117,7 @@ def prepare_validation_submission():
                     print(f"    - Tumor voxels: {non_zero_voxels:,} ({tumor_percentage:.2f}%)")
                     print(f"    - Data type: {data.dtype}")
                     print(f"    - Value range: [{data.min():.1f}, {data.max():.1f}]")
-                    
-                    # Check for expected BraTS labels
-                    expected_labels = {0, 1, 2, 4}  # Background, NCR, ED, ET
-                    found_labels = set(unique_labels.astype(int))
-                    
-                    if found_labels.issubset(expected_labels):
-                        print(f"    ✅ Labels match BraTS format")
-                    else:
-                        unexpected = found_labels - expected_labels
-                        print(f"    ⚠️  Unexpected labels found: {unexpected}")
-                    
+            
                 except Exception as e:
                     print(f"  ❌ Error reading {file}: {e}")
                     

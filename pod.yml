@@ -112,9 +112,8 @@ spec:
           # FIXED: Use direct path instead of symlink
           nnUNetv2_predict -i "${REPO_PATH}/Dataset137_BraTS2021_inference/imagesTs" -o "./outputs" -d 137 -c 3d_fullres -f 5
 
-          echo "Running evaluation..."
-          python cal_avg_dice.py
-          
+          python prepare_val_sub.py
+
           sleep infinity
       volumeMounts:
         - name: git-repo
