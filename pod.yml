@@ -44,9 +44,7 @@ spec:
           
           git clone https://github.com/tsereda/BraSyn_tutorial.git ${REPO_PATH}
           cd ${REPO_PATH}
-          cp /data/ASNR-MICCAI-BraTS2023-GLI-Challenge-TrainingData.zip .
           cp /data/ASNR-MICCAI-BraTS2023-GLI-Challenge-ValidationData.zip .
-          7z x ASNR-MICCAI-BraTS2023-GLI-Challenge-TrainingData.zip -y -mmt=$(nproc)
           7z x ASNR-MICCAI-BraTS2023-GLI-Challenge-ValidationData.zip -y -mmt=$(nproc)
           source /opt/conda/etc/profile.d/mamba.sh
           mamba create -n brasyn python=3.10 -y
