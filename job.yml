@@ -21,9 +21,9 @@ spec:
           image: gitlab-registry.nrp-nautilus.io/prp/jupyter-stack/prp
           env:
             - name: REPO_PATH
-              value: /app/brats-synthesis
+              value: /app/BraSyn_tutorial
             - name: PYTHONPATH
-              value: /app/brats-synthesis
+              value: /app/BraSyn_tutorial
             - name: CUDA_VISIBLE_DEVICES
               value: "0"
             - name: nnUNet_raw
@@ -78,8 +78,7 @@ spec:
               python fast_cwdm/scripts/complete_dataset.py \
                 --input_dir ../BraSyn_tutorial/pseudo_val_set \
                 --checkpoint_dir ./checkpoints \
-                --device cuda:0 \
-                --max_cases 3
+                --device cuda:0
 
               export nnUNet_raw="/app/nnunet/raw"
               export nnUNet_preprocessed="/app/nnunet/preprocessed"
@@ -128,7 +127,7 @@ spec:
 
               python prepare_val_sub.py
 
-              cp brasyn_validation_submission.zip /data/brasyn_validation_submission0.zip
+              sudo cp brasyn_validation_submission.zip /data/brasyn_validation_submission1.zip
               ls /data/
 
          
