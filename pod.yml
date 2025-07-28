@@ -104,7 +104,7 @@ spec:
           ln -s $(pwd)/Dataset137_BraTS2021_test $nnUNet_raw/Dataset137_BraTS2021
 
           # obtain the predicted segmentation maps.
-          nnUNetv2_predict -i "$nnUNet_raw/Dataset137_BraTS2021/imagesTr" -o "./outputs" -d 137 -c 3d_fullres -f 5
+          nnUNetv2_predict -i "$nnUNet_raw/Dataset137_BraTS2021/imagesTr" -o "./outputs" -c 3d_fullres -f 5
 
           python cal_avg_dice.py
           
