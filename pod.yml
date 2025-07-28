@@ -72,9 +72,8 @@ spec:
           python fast_cwdm/scripts/complete_dataset.py \
             --input_dir ../BraSyn_tutorial/pseudo_val_set \
             --checkpoint_dir ./checkpoints \
-            --device cuda:0
-
-
+            --device cuda:0 \
+            --max_cases 3
 
           export nnUNet_raw="/app/nnunet/raw"
           export nnUNet_preprocessed="/app/nnunet/preprocessed"
