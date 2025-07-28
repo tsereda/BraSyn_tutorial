@@ -38,7 +38,7 @@ def convert_folder_with_preds_back_to_BraTS_labeling_convention(input_folder: st
 
 if __name__ == '__main__':
     # ✅ FIXED: Change to your actual completed validation directory
-    brats_data_dir = 'completed_validation'  # or wherever your synthesis outputs go
+    brats_data_dir = '../brats-synthesis/datasets/BRATS2023/pseudo_validation_completed'  # or wherever your synthesis outputs go
     
     task_id = 137
     task_name = "BraTS2021_inference"  # Changed name to indicate inference
