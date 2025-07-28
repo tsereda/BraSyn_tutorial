@@ -1,5 +1,6 @@
 import multiprocessing
 import shutil
+import os
 from multiprocessing import Pool
 
 import SimpleITK as sitk
