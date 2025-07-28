@@ -103,6 +103,19 @@ spec:
 
           ln -s $(pwd)/Dataset137_BraTS2021_test $nnUNet_raw/Dataset137_BraTS2021
 
+          #fix.sh
+
+          # Add to ~/.bashrc for persistence
+          echo 'export nnUNet_raw="/app/nnunet/raw"' >> ~/.bashrc
+          echo 'export nnUNet_preprocessed="/app/nnunet/preprocessed"' >> ~/.bashrc
+          echo 'export nnUNet_results="/app/nnunet/results"' >> ~/.bashrc
+
+          # Reload the profile
+          source ~/.bashrc
+
+          # Now the prediction command should work
+          nnUNetv2_predict -i "/app/nnunet/raw/Dataset137_BraTS2021/imagesTs" -o "./outputs" -d 137 -c 3d_fullres -f 5
+
           # obtain the predicted segmentation maps.
           nnUNetv2_predict -i "$nnUNet_raw/Dataset137_BraTS2021/imagesTr" -o "./outputs" -c 3d_fullres -f 5
 
