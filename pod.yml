@@ -38,10 +38,6 @@ spec:
         - |
           sudo apt-get update && sudo apt-get install -y p7zip-full wget
           
-          #pip install synapseclient
-          #synapse config
-          #synapse get -r syn51514105 
-          
           git clone https://github.com/tsereda/BraSyn_tutorial.git ${REPO_PATH}
           cd ${REPO_PATH}
           cp /data/ASNR-MICCAI-BraTS2023-GLI-Challenge-ValidationData.zip .
@@ -65,10 +61,6 @@ spec:
           cp BraTSCheckpoints/t2f/brats_*.pt ./checkpoints/
           cp BraTSCheckpoints/t2w/brats_*.pt ./checkpoints/
 
-          #python project/generate_missing_modality.py
-          
-
-
           python fast_cwdm/scripts/complete_dataset.py \
             --input_dir ../BraSyn_tutorial/pseudo_val_set \
             --checkpoint_dir ./checkpoints \
@@ -82,6 +74,7 @@ spec:
           mkdir -p /app/nnunet/{raw,preprocessed,results}
 
           echo "Downloading pre-trained nnUNet weights, dataset.json, and plan.json..."
+          cd ${REPO_PATH}
           gdown 1n9dqT114udr9Qq8iYEKsJK347iHg9N88
           gdown 1A_suxQwElucF3w1HEYg3wMo6dG9OxBHo
           gdown 1U2b0BTNi8zrJACReoi_W08Fe-wM394wI
@@ -90,19 +83,20 @@ spec:
           ls -la *.pth *.json
 
           echo "Setting up nnUNet model structure..."
-          mkdir -p $nnUNet_results/Dataset137_BraTS2021/nnUNetTrainer__nnUNetPlans__3d_fullres/fold_5/
+          # FIXED: Use Dataset137_BraTS2021_inference to match what nnUNet expects during inference
+          mkdir -p $nnUNet_results/Dataset137_BraTS2021_inference/nnUNetTrainer__nnUNetPlans__3d_fullres/fold_5/
           
-          # Move files to correct locations (assuming the downloaded files have these names)
-          mv checkpoint_best.pth $nnUNet_results/Dataset137_BraTS2021/nnUNetTrainer__nnUNetPlans__3d_fullres/fold_5/checkpoint_final.pth
-          mv dataset.json $nnUNet_results/Dataset137_BraTS2021/nnUNetTrainer__nnUNetPlans__3d_fullres/
-          mv plans.json $nnUNet_results/Dataset137_BraTS2021/nnUNetTrainer__nnUNetPlans__3d_fullres/
+          # Move files to correct locations
+          mv checkpoint_best.pth $nnUNet_results/Dataset137_BraTS2021_inference/nnUNetTrainer__nnUNetPlans__3d_fullres/fold_5/checkpoint_final.pth
+          mv dataset.json $nnUNet_results/Dataset137_BraTS2021_inference/nnUNetTrainer__nnUNetPlans__3d_fullres/
+          mv plans.json $nnUNet_results/Dataset137_BraTS2021_inference/nnUNetTrainer__nnUNetPlans__3d_fullres/
 
           echo "Converting data to nnUNet format..."
-          python Dataset137_BraTS21.py
+          python conv.py
 
-          ln -s $(pwd)/Dataset137_BraTS2021_test $nnUNet_raw/Dataset137_BraTS2021
-
-          #fix.sh
+          echo "Setting up data symlink..."
+          # FIXED: Create proper symlink for data
+          ln -s ${REPO_PATH}/Dataset137_BraTS2021_inference $nnUNet_raw/Dataset137_BraTS2021
 
           # Add to ~/.bashrc for persistence
           echo 'export nnUNet_raw="/app/nnunet/raw"' >> ~/.bashrc
@@ -112,12 +106,16 @@ spec:
           # Reload the profile
           source ~/.bashrc
 
-          # Now the prediction command should work
-          nnUNetv2_predict -i "/app/nnunet/raw/Dataset137_BraTS2021/imagesTs" -o "./outputs" -d 137 -c 3d_fullres -f 5
+          echo "Verifying setup..."
+          echo "Model files:"
+          ls -la $nnUNet_results/Dataset137_BraTS2021_inference/nnUNetTrainer__nnUNetPlans__3d_fullres/
+          echo "Data files:"
+          ls -la $nnUNet_raw/Dataset137_BraTS2021/imagesTs/ | head -5
 
-          # obtain the predicted segmentation maps.
-          nnUNetv2_predict -i "$nnUNet_raw/Dataset137_BraTS2021/imagesTr" -o "./outputs" -c 3d_fullres -f 5
+          echo "Running nnUNet prediction..."
+          nnUNetv2_predict -i "$nnUNet_raw/Dataset137_BraTS2021/imagesTs" -o "./outputs" -d 137 -c 3d_fullres -f 5
 
+          echo "Running evaluation..."
           python cal_avg_dice.py
           
           sleep infinity
