@@ -93,6 +93,50 @@ def prepare_validation_submission():
         for file in sorted(files_in_zip):
             print(f"    ✓ {file}")
     
+    # Quality check - inspect segmentation content
+    print(f"\n🔬 Quality Check - Segmentation Content:")
+    try:
+        import nibabel as nib
+        import numpy as np
+        
+        for file in sorted(os.listdir(submission_dir)):
+            if file.endswith('.nii.gz'):
+                file_path = os.path.join(submission_dir, file)
+                try:
+                    img = nib.load(file_path)
+                    data = img.get_fdata()
+                    
+                    unique_labels = np.unique(data)
+                    non_zero_voxels = np.sum(data > 0)
+                    total_voxels = data.size
+                    tumor_percentage = (non_zero_voxels / total_voxels) * 100
+                    
+                    print(f"  📊 {file}:")
+                    print(f"    - Shape: {data.shape}")
+                    print(f"    - Labels: {sorted(unique_labels.astype(int))}")
+                    print(f"    - Tumor voxels: {non_zero_voxels:,} ({tumor_percentage:.2f}%)")
+                    print(f"    - Data type: {data.dtype}")
+                    print(f"    - Value range: [{data.min():.1f}, {data.max():.1f}]")
+                    
+                    # Check for expected BraTS labels
+                    expected_labels = {0, 1, 2, 4}  # Background, NCR, ED, ET
+                    found_labels = set(unique_labels.astype(int))
+                    
+                    if found_labels.issubset(expected_labels):
+                        print(f"    ✅ Labels match BraTS format")
+                    else:
+                        unexpected = found_labels - expected_labels
+                        print(f"    ⚠️  Unexpected labels found: {unexpected}")
+                    
+                except Exception as e:
+                    print(f"  ❌ Error reading {file}: {e}")
+                    
+    except ImportError:
+        print("  ⚠️  nibabel not available - skipping content check")
+        print("  Install with: pip install nibabel")
+    except Exception as e:
+        print(f"  ⚠️  Quality check failed: {e}")
+    
     return True
 
 if __name__ == "__main__":
