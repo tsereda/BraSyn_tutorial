@@ -102,11 +102,6 @@ def main():
             print(f"  Shape: {shape}")
             print(f"  Spacing: {[f'{s:.2f}' for s in spacing]}")
             print(f"  Size: {size_mb:.1f}MB")
-            
-            if shape == (240, 240, 155):
-                print(f"  ✅ Perfect BraTS size!")
-            else:
-                print(f"  ⚠️  Expected (240, 240, 155), got {shape}")
         
     elif os.path.isdir(input_path):
         # Check if it's a case directory or parent directory
