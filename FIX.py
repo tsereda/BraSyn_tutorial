@@ -145,7 +145,7 @@ def main():
     
     # Load files
     original_seg, nii_obj = load_nifti(test_file)
-    gt_seg = load_nifti(gt_file)
+    gt_seg, _ = load_nifti(gt_file)
     
     print(f"Original shape: {original_seg.shape}")
     
@@ -193,7 +193,7 @@ def main():
                 gt_file = case_dir / f"{case_name}-seg.nii.gz"
                 
                 if gt_file.exists():
-                    gt_seg = load_nifti(gt_file)
+                    gt_seg, _ = load_nifti(gt_file)
                     
                     # Quick dice comparison
                     orig_dice = []
