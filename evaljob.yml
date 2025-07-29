@@ -91,7 +91,8 @@ spec:
                 --evaluate_metrics \
                 --wandb_project "fast-cwmd-eval" \
                 --wandb_entity "timgsereda" \
-                --wandb_run_name "training_data_eval"
+                --wandb_run_name "training_data_eval" \
+                --max_cases 5
 
               export nnUNet_raw="/app/nnunet/raw"
               export nnUNet_preprocessed="/app/nnunet/preprocessed"
