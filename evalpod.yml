@@ -79,7 +79,8 @@ spec:
           mamba activate brasyn
 
           # Drop one modality from training data
-          # python drop_modality.py
+          python drop_modality.py --source_folder SNR-MICCAI-BraTS2023-GLI-MET-ValidationData --output_folder pseudo_val_set
+          #ASNR-MICCAI-BraTS2023-GLI-MET-ValidationData,pseudo_val_set
 
           cd ..
           git clone -b seemore https://github.com/tsereda/brats-synthesis.git
@@ -98,13 +99,13 @@ spec:
             --input_dir "../BraSyn_tutorial/ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData" \
             --checkpoint_dir ./checkpoints \
             --device cuda:0 \
-            --evaluation_mode \
             --evaluate_metrics \
             --log_visual_samples \
             --wandb_project "fast-cwmd-eval" \
             --wandb_entity "timgsereda" \
             --wandb_run_name "training_data_eval" \
-            --max_cases 3
+            --max_cases 3 \
+            --output_dir ./datasets/BRATS2023/pseudo_validation_completed
 
           export nnUNet_raw="/app/nnunet/raw"
           export nnUNet_preprocessed="/app/nnunet/preprocessed"
