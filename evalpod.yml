@@ -37,9 +37,9 @@ spec:
       image: gitlab-registry.nrp-nautilus.io/prp/jupyter-stack/prp
       env:
         - name: REPO_PATH
-          value: /app/brats-synthesis
+          value: /app/BraSyn_tutorial
         - name: PYTHONPATH
-          value: /app/brats-synthesis
+          value: /app/BraSyn_tutorial
         - name: CUDA_VISIBLE_DEVICES
           value: "0"
         - name: PYTHONUNBUFFERED
@@ -74,6 +74,8 @@ spec:
           tar -xzf ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData.tar.gz
           ls -lh
           # Keep training data for evaluation
+
+          echo "Copying training data for some reason..."
           cp -r ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData-Original
           
           source /opt/conda/etc/profile.d/mamba.sh
