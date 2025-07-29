@@ -11,7 +11,7 @@ def load_nifti(path):
     nii = nib.load(str(path))
     return nii.get_fdata(), nii
 
-def swap_labels(segmentation, label1=3, label2=4):
+def swap_labels(segmentation, label1=2, label2=4):
     """Swap two labels in segmentation"""
     seg_copy = segmentation.copy()
     
@@ -47,10 +47,10 @@ def create_comparison_plot(original_seg, swapped_seg, slice_idx=None):
     axes[0, 0].set_title('Original - Full Segmentation')
     axes[0, 0].axis('off')
     
-    # Original - only label 3
-    orig_label3 = (orig_slice == 3).astype(int)
-    axes[0, 1].imshow(orig_label3, cmap='Reds', vmin=0, vmax=1)
-    axes[0, 1].set_title('Original - Label 3 (Red)')
+    # Original - only label 2
+    orig_label2 = (orig_slice == 2).astype(int)
+    axes[0, 1].imshow(orig_label2, cmap='Reds', vmin=0, vmax=1)
+    axes[0, 1].set_title('Original - Label 2 (Red)')
     axes[0, 1].axis('off')
     
     # Original - only label 4
@@ -65,10 +65,10 @@ def create_comparison_plot(original_seg, swapped_seg, slice_idx=None):
     axes[1, 0].set_title('Swapped - Full Segmentation')
     axes[1, 0].axis('off')
     
-    # Swapped - only label 3
-    swap_label3 = (swap_slice == 3).astype(int)
-    axes[1, 1].imshow(swap_label3, cmap='Reds', vmin=0, vmax=1)
-    axes[1, 1].set_title('Swapped - Label 3 (Red)')
+    # Swapped - only label 2
+    swap_label2 = (swap_slice == 2).astype(int)
+    axes[1, 1].imshow(swap_label2, cmap='Reds', vmin=0, vmax=1)
+    axes[1, 1].set_title('Swapped - Label 2 (Red)')
     axes[1, 1].axis('off')
     
     # Swapped - only label 4
@@ -77,13 +77,13 @@ def create_comparison_plot(original_seg, swapped_seg, slice_idx=None):
     axes[1, 2].set_title('Swapped - Label 4 (Blue)')
     axes[1, 2].axis('off')
     
-    plt.suptitle(f'Label Swap Comparison (Slice {slice_idx})\nTop: Original, Bottom: After swapping labels 3↔4')
+    plt.suptitle(f'Label Swap Comparison (Slice {slice_idx})\nTop: Original, Bottom: After swapping labels 2↔4')
     plt.tight_layout()
     return fig
 
 def main():
     print("BraTS Label Swap Tool")
-    print("This script swaps labels 3 and 4 in segmentation files")
+    print("This script swaps labels 2 and 4 in segmentation files")
     print("=" * 60)
     
     # Find prediction files
@@ -119,12 +119,12 @@ def main():
     print("ORIGINAL SEGMENTATION:")
     analyze_labels(original_seg)
     
-    # Swap labels 3 and 4
-    swapped_seg = swap_labels(original_seg, label1=3, label2=4)
+    # Swap labels 2 and 4
+    swapped_seg = swap_labels(original_seg, label1=2, label2=4)
     
     # Analyze swapped labels
     print("\n" + "="*40)
-    print("AFTER SWAPPING LABELS 3 ↔ 4:")
+    print("AFTER SWAPPING LABELS 2 ↔ 4:")
     analyze_labels(swapped_seg)
     
     # Create comparison visualization
@@ -151,13 +151,13 @@ def main():
     
     print("\n" + "="*60)
     print("SUMMARY:")
-    print("- Labels 3 and 4 have been swapped")
-    print("- Label 3 should now represent: Enhancing Tumor (ET)")
+    print("- Labels 2 and 4 have been swapped")
+    print("- Label 2 should now represent: Peritumoral Edema (ED) - outer region")
     print("- Label 4 should now represent: Whole Tumor region (WT)")
     print("- Use this corrected file to verify the swap worked as expected")
     
     # Ask if user wants to process all files
-    response = input("\nDo you want to swap labels 3↔4 for ALL prediction files? (y/n): ")
+    response = input("\nDo you want to swap labels 2↔4 for ALL prediction files? (y/n): ")
     if response.lower() == 'y':
         print(f"\nProcessing all {len(pred_files)} files...")
         
@@ -171,7 +171,7 @@ def main():
             seg_data, nii_obj = load_nifti(pred_file)
             
             # Swap labels
-            corrected_seg = swap_labels(seg_data, label1=3, label2=4)
+            corrected_seg = swap_labels(seg_data, label1=2, label2=4)
             
             # Save corrected version
             output_path = corrected_dir / Path(pred_file).name
