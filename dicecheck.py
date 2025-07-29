@@ -71,7 +71,7 @@ def main():
     
     # Find files automatically
     original_files = glob.glob("outputs/*.nii.gz")
-    corrected_files = glob.glob("corrected_outputs/*.nii.gz")
+    corrected_files = glob.glob("outputs/*.nii.gz")
     
     if not original_files:
         print("❌ No original files found in outputs/")
