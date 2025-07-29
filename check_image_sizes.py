@@ -50,16 +50,6 @@ def analyze_case_directory(case_dir):
         
         if all_same:
             print(f"  ✅ All modalities have consistent shape: {first_shape}")
-            
-            # Check if it's the expected BraTS size
-            if first_shape == (240, 240, 155):
-                print(f"  ✅ Perfect! Matches expected BraTS size (240, 240, 155)")
-            elif first_shape == (224, 224, 160):
-                print(f"  ⚠️  Still in preprocessed size - needs restoration to (240, 240, 155)")
-            elif first_shape == (224, 224, 155):
-                print(f"  ⚠️  Partially restored - width/height need padding 224→240")
-            else:
-                print(f"  ⚠️  Unexpected size - should be (240, 240, 155) for nnUNet")
         else:
             print(f"  ❌ Inconsistent shapes across modalities!")
             for mod, shape in shapes.items():
