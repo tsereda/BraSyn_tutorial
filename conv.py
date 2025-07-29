@@ -84,7 +84,7 @@ if __name__ == '__main__':  # Fixed: was **name**
    
     print(f"\n✅ Conversion complete!")
     print(f"📁 nnUNet inference data ready at: {imagestr}")
-    print(f"📝 Found {len([f for f in os.listdir(imagestr) if f.endswith('_0000.nii.gz')])} cases")
+    print(f"Found {len([f for f in os.listdir(imagestr) if f.endswith('_0000.nii.gz')])} cases")
    
     # Create symlink for nnUNet (if needed) - with error handling
     try:

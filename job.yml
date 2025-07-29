@@ -51,22 +51,24 @@ spec:
           args:
             - |
               sudo apt-get update && sudo apt-get install -y p7zip-full wget
-          
+              pip install -r project/requirements.txt
+              pip install nnunetv2 gdown simpleitk numpy batchgenerators blobfile wandb monai
               git clone https://github.com/tsereda/BraSyn_tutorial.git ${REPO_PATH}
               cd ${REPO_PATH}
-              cp /data/ASNR-MICCAI-BraTS2023-GLI-MET-Challenge-ValidationData.zip .
-              7z x ASNR-MICCAI-BraTS2023-GLI-MET-Challenge-ValidationData.zip -y -mmt=$(nproc)
-              rm -r ASNR-MICCAI-BraTS2023-GLI-MET-Challenge-ValidationData/BraTS-GLI-*
+              ls /data/
+              cp /data/ASNR-MICCAI-BraTS2023-GLI-MET-ValidationData.tar.gz .
+              tar -xzf ASNR-MICCAI-BraTS2023-GLI-MET-ValidationData.tar.gz
+              ls -lh
+              sudo rm -r ASNR-MICCAI-BraTS2023-GLI-MET-ValidationData/BraTS-GLI-*
               source /opt/conda/etc/profile.d/mamba.sh
               mamba create -n brasyn python=3.10 -y
               mamba activate brasyn
-              pip install -r project/requirements.txt
-              pip install nnunetv2 gdown simpleitk numpy batchgenerators blobfile wandb monai
+
               
               python drop_modality.py
 
               cd ..
-              git clone -b inf https://github.com/tsereda/brats-synthesis.git
+              git clone -b seemore https://github.com/tsereda/brats-synthesis.git
               cd brats-synthesis
               unzip /data/BraTSChekpoints.zip
 
@@ -128,7 +130,7 @@ spec:
 
               python prepare_val_sub.py
 
-              sudo cp brasyn_validation_submission.zip /data/brasyn_validation_submission1.zip
+              sudo cp brasyn_validation_submission.zip /data/brasyn_validation_submission2.zip
               ls /data/
 
          

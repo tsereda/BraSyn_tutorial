@@ -11,15 +11,15 @@ def analyze_segmentation_file(seg_file_path):
     """
     
     if not os.path.exists(seg_file_path):
-        print(f"❌ File not found: {seg_file_path}")
+        print(f"File not found: {seg_file_path}")
         return False
     
     if not seg_file_path.endswith('.nii.gz'):
-        print(f"❌ File must be a .nii.gz file: {seg_file_path}")
+        print(f"File must be a .nii.gz file: {seg_file_path}")
         return False
     
-    print(f"🔍 Analyzing segmentation file: {os.path.basename(seg_file_path)}")
-    print(f"📁 Full path: {seg_file_path}")
+    print(f"Analyzing segmentation file: {os.path.basename(seg_file_path)}")
+    print(f"Full path: {seg_file_path}")
     print("=" * 60)
     
     try:
@@ -33,13 +33,13 @@ def analyze_segmentation_file(seg_file_path):
         total_voxels = data.size
         tumor_percentage = (non_zero_count / total_voxels) * 100
         
-        print(f"📊 Basic Information:")
+        print(f"Basic Information:")
         print(f"   - Shape: {data.shape}")
         print(f"   - Data type: {data.dtype}")
         print(f"   - Value range: [{data.min():.1f}, {data.max():.1f}]")
         print(f"   - File size: {os.path.getsize(seg_file_path) / 1024:.1f} KB")
         
-        print(f"\n🏷️  Label Analysis:")
+        print(f"\nLabel Analysis:")
         print(f"   - Unique labels: {sorted(unique_labels)}")
         print(f"   - Number of label classes: {len(unique_labels)}")
         print(f"   - Background voxels (label 0): {np.sum(data == 0):,}")
@@ -47,7 +47,7 @@ def analyze_segmentation_file(seg_file_path):
         print(f"   - Tumor percentage: {tumor_percentage:.2f}%")
         
         # Detailed breakdown by label
-        print(f"\n📈 Label Distribution:")
+        print(f"\nLabel Distribution:")
         for label in sorted(unique_labels):
             count = np.sum(data == label)
             percentage = (count / total_voxels) * 100
@@ -58,9 +58,7 @@ def analyze_segmentation_file(seg_file_path):
         
         # Compare with common formats
         print(f"\n🔍 Format Comparison:")
-        print(f"   📊 This file uses: {sorted(unique_labels)}")
-        print(f"   📊 Your outputs have: [0, 1, 2, 3]")
-        print(f"   📊 BraTS standard: [0, 1, 2, 4]")
+        print(f"This file uses: {sorted(unique_labels)}")
         
         # Determine if conversion is needed
         your_labels = [0, 1, 2, 3]
@@ -68,20 +66,16 @@ def analyze_segmentation_file(seg_file_path):
         file_labels = sorted(unique_labels)
         
         if file_labels == your_labels:
-            print(f"   ✅ PERFECT MATCH! Your outputs match this training example.")
-            print(f"   🎯 No conversion needed - submit as is!")
+            print(f" Your outputs match this training example.")
         elif file_labels == brats_standard:
-            print(f"   ⚠️  Training uses BraTS standard [0,1,2,4]")
-            print(f"   🔧 You need to convert [0,1,2,3] → [0,1,2,4]")
-            print(f"   💡 Use the label conversion script")
+            print(f" Training uses BraTS standard [0,1,2,4]")
         else:
-            print(f"   ❓ Unexpected label pattern: {file_labels}")
-            print(f"   🤔 Need to investigate what these labels represent")
+            print(f" Unexpected label pattern: {file_labels}")
         
         return True
         
     except Exception as e:
-        print(f"❌ Error analyzing file: {e}")
+        print(f"Error analyzing file: {e}")
         return False
 
 if __name__ == "__main__":
@@ -93,12 +87,12 @@ if __name__ == "__main__":
         sys.exit(1)
     
     seg_file = sys.argv[1]
-    print("🎯 BraSyn Challenge - Single Segmentation Analysis")
+    print("BraSyn Challenge - Single Segmentation Analysis")
     print("=" * 60)
     
     success = analyze_segmentation_file(seg_file)
     
     if success:
-        print(f"\n🎉 Analysis complete!")
+        print(f"\nAnalysis complete!")
     else:
-        print(f"\n❌ Analysis failed!")
+        print(f"\nAnalysis failed!")
