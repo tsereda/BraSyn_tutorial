@@ -79,7 +79,7 @@ spec:
           mamba activate brasyn
 
           # Drop one modality from training data
-          python drop_modality.py --source_folder SNR-MICCAI-BraTS2023-GLI-MET-ValidationData --output_folder pseudo_val_set
+          python drop_modality.py ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData pseudo_val_set
           #ASNR-MICCAI-BraTS2023-GLI-MET-ValidationData,pseudo_val_set
 
           cd ..
