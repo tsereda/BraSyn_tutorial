@@ -58,7 +58,9 @@ spec:
               ls /data/
               
               # Use TRAINING data instead of validation (has GT segmentations)
+              echo "Copying tar.gz from data..."
               cp /data/ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData.tar.gz .
+              echo "tar -xzfing tar.gz..."
               tar -xzf ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData.tar.gz
               ls -lh
               # Keep training data for evaluation
@@ -69,12 +71,12 @@ spec:
               mamba activate brasyn
 
               # Drop one modality from training data
-              python drop_modality.py
+              # python drop_modality.py
 
               cd ..
               git clone -b seemore https://github.com/tsereda/brats-synthesis.git
               cd brats-synthesis
-              unzip /data/BraTSCheckpoints.zip
+              unzip /data/BraTSChekpoints.zip
 
               mkdir -p ./checkpoints
               cp BraTSChekpoints/t1c/brats_*.pt ./checkpoints/
