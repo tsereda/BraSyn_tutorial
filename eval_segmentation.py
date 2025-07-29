@@ -106,9 +106,9 @@ def main():
 
     # Original training data directory - try multiple possible locations
     possible_original_dirs = [
-        Path("ASNR-MICCAI-BraTS2023-GLI-MET-TrainingDatal"),
+        Path("ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData"),
         Path("../BraSyn_tutorial/ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData"),
-        Path("BraTS2023-TrainingDatal"),
+        Path("BraTS2023-TrainingData"),
         Path("../BraSyn_tutorial/BraTS2023-TrainingData")
     ]
     
@@ -144,10 +144,15 @@ def main():
         pred_seg = load_nifti(pred_file)
         
         # Find corresponding ground truth segmentation
-        # Try different possible naming conventions
+        # FIXED: Look in the case subdirectory
+        case_dir = original_dir / case_name
+        if not case_dir.exists():
+            print(f"Warning: Case directory not found: {case_dir}")
+            continue
+            
         possible_gt_files = [
-            original_dir / f"{case_name}_seg.nii.gz",
-            original_dir / f"{case_name}-seg.nii.gz",
+            case_dir / f"{case_name}-seg.nii.gz",
+            case_dir / f"{case_name}_seg.nii.gz",
         ]
         
         gt_seg_file = None
@@ -158,17 +163,21 @@ def main():
                 
         if gt_seg_file is None:
             print(f"Warning: GT segmentation not found for {case_name}")
+            print(f"  Looked in: {case_dir}")
+            print(f"  Available files:")
+            for file in case_dir.glob("*.nii.gz"):
+                print(f"    {file.name}")
             continue
             
         gt_seg = load_nifti(gt_seg_file)
         
         # Load one of the original modalities for visualization
-        # Try different possible naming conventions
+        # FIXED: Look in the case subdirectory
         possible_t1_files = [
-            original_dir / f"{case_name}_t1.nii.gz",
-            original_dir / f"{case_name}-t1.nii.gz",
-            original_dir / f"{case_name}_t1n.nii.gz",
-            original_dir / f"{case_name}-t1n.nii.gz",
+            case_dir / f"{case_name}-t1n.nii.gz",
+            case_dir / f"{case_name}_t1n.nii.gz",
+            case_dir / f"{case_name}-t1.nii.gz",
+            case_dir / f"{case_name}_t1.nii.gz",
         ]
         
         t1_img = None
