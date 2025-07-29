@@ -128,7 +128,17 @@ spec:
               # FIXED: Use direct path instead of symlink
               nnUNetv2_predict -i "${REPO_PATH}/Dataset137_BraTS2021_inference/imagesTs" -o "./outputs" -d 137 -c 3d_fullres -f 5
 
+              FIRST_SEG_FILE=$(find ./outputs -name "*.nii.gz" | head -1)
+              if [ -n "$FIRST_SEG_FILE" ]; then
+                  python ${REPO_PATH}/check_single_seg.py "$FIRST_SEG_FILE"
+              fi
+
               python prepare_val_sub.py
+
+              FIRST_PROCESSED_FILE=$(find ./validation_submission -name "*.nii.gz" | head -1)
+              if [ -n "$FIRST_PROCESSED_FILE" ]; then
+                  python ${REPO_PATH}/check_single_seg.py "$FIRST_PROCESSED_FILE"
+              fi
 
               sudo cp brasyn_validation_submission.zip /data/brasyn_validation_submission2.zip
               ls /data/

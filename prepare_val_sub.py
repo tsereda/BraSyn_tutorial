@@ -81,12 +81,12 @@ def prepare_validation_submission():
     archive_size = os.path.getsize(archive_name) / (1024 * 1024)
     print(f"Archive created: {archive_name} ({archive_size:.1f} MB)")
     
-    print(f"\n🎉 Validation submission ready!")
+    print(f"\nValidation submission ready!")
     print(f"Submit this file: {archive_name}")
     print(f"Contains {processed_count} segmentation masks in NIfTI format")
     
     # Final verification
-    print(f"\n🔍 Final verification:")
+    print(f"\nFinal verification:")
     with zipfile.ZipFile(archive_name, 'r') as zipf:
         files_in_zip = zipf.namelist()
         print(f"  - Archive contains {len(files_in_zip)} files")
@@ -94,7 +94,7 @@ def prepare_validation_submission():
             print(f"    ✓ {file}")
     
     # Quality check - inspect segmentation content
-    print(f"\n🔬 Quality Check - Segmentation Content:")
+    print(f"\nQuality Check - Segmentation Content:")
     try:
         import nibabel as nib
         import numpy as np
