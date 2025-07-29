@@ -83,19 +83,9 @@ spec:
               cp BraTSCheckpoints/t1n/brats_*.pt ./checkpoints/
               cp BraTSCheckpoints/t2f/brats_*.pt ./checkpoints/
               cp BraTSCheckpoints/t2w/brats_*.pt ./checkpoints/
-
-              # Run synthesis with evaluation mode for wandb logging
-              # Check if pseudo_val_set exists, otherwise use the training data directly
-              if [ -d "../BraSyn_tutorial/pseudo_val_set" ]; then
-                INPUT_DIR="../BraSyn_tutorial/pseudo_val_set"
-              else
-                INPUT_DIR="../BraSyn_tutorial/ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData"
-              fi
-              
-              echo "Using input directory: $INPUT_DIR"
               
               python fast_cwdm/scripts/complete_dataset.py \
-                --input_dir "$INPUT_DIR" \
+                --input_dir "../BraSyn_tutorial/ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData" \
                 --checkpoint_dir ./checkpoints \
                 --device cuda:0 \
                 --evaluation_mode \
