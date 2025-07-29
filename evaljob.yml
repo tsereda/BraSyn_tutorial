@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: 4-fast-cwdm-eval
+  name: 3-fast-cwdm-eval
 spec:
   backoffLimit: 0
   template:
@@ -201,7 +201,7 @@ spec:
             sizeLimit: 50Gi
         - name: data
           persistentVolumeClaim:
-            claimName: brats2025-4
+            claimName: brats2025-3
         - name: shm
           emptyDir:
             medium: Memory

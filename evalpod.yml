@@ -73,11 +73,7 @@ spec:
           echo "tar -xzfing tar.gz..."
           tar -xzf ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData.tar.gz
           ls -lh
-          # Keep training data for evaluation
 
-          echo "Copying training data for some reason..."
-          cp -r ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData-Original
-          
           source /opt/conda/etc/profile.d/mamba.sh
           mamba create -n brasyn python=3.10 -y
           mamba activate brasyn
@@ -88,6 +84,8 @@ spec:
           cd ..
           git clone -b seemore https://github.com/tsereda/brats-synthesis.git
           cd brats-synthesis
+          echo "ls -lh /data/"
+          ls -lh /data/
           unzip /data/BraTSChekpoints.zip
 
           mkdir -p ./checkpoints
