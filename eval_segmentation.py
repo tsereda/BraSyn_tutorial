@@ -82,13 +82,57 @@ def create_segmentation_overlay(image, pred_seg, gt_seg, case_id):
 def main():
     # Initialize wandb (continue the existing run)
     wandb.init(project="fast-cwmd-eval", entity="timgsereda", job_type="seg_evaluation")
+    
+    # Check current working directory
+    print(f"Current working directory: {os.getcwd()}")
 
-    # Find prediction files
-    pred_files = glob.glob("./outputs/*.nii.gz")
-    print(f"Found {len(pred_files)} prediction files")
+    # Find prediction files - try multiple possible locations
+    possible_pred_paths = [
+        "./outputs/*.nii.gz",
+        "../outputs/*.nii.gz", 
+        "../brats-synthesis/outputs/*.nii.gz"
+    ]
+    
+    pred_files = []
+    for pattern in possible_pred_paths:
+        pred_files = glob.glob(pattern)
+        if pred_files:
+            print(f"Found {len(pred_files)} prediction files at {pattern}")
+            break
+    
+    if not pred_files:
+        print("No prediction files found!")
+        return
 
-    # Original training data directory
-    original_dir = Path("BraTS2023-TrainingData-Original")
+    # Original training data directory - try multiple possible locations
+    possible_original_dirs = [
+        Path("ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData-Original"),
+        Path("../BraSyn_tutorial/ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData-Original"),
+        Path("BraTS2023-TrainingData-Original"),
+        Path("../BraSyn_tutorial/BraTS2023-TrainingData-Original")
+    ]
+    
+    original_dir = None
+    for possible_dir in possible_original_dirs:
+        if possible_dir.exists():
+            original_dir = possible_dir
+            break
+            
+    if original_dir is None:
+        print("Error: Could not find original training data directory")
+        print("Current working directory:", os.getcwd())
+        print("Available directories:")
+        for item in Path(".").iterdir():
+            if item.is_dir():
+                print(f"  {item}")
+        return
+    
+    print(f"Using original directory: {original_dir}")
+    
+    # Debug: Check what's actually in the original directory
+    print(f"Original directory contents (first 10 items):")
+    for item in sorted(original_dir.iterdir())[:10]:
+        print(f"  {item.name}")
 
     all_dice_scores = {"dice_et": [], "dice_tc": [], "dice_wt": [], "dice_mean": []}
 
@@ -100,19 +144,38 @@ def main():
         pred_seg = load_nifti(pred_file)
         
         # Find corresponding ground truth segmentation
-        gt_seg_file = original_dir / f"{case_name}_seg.nii.gz"
-        if not gt_seg_file.exists():
+        # Try different possible naming conventions
+        possible_gt_files = [
+            original_dir / f"{case_name}_seg.nii.gz",
+            original_dir / f"{case_name}-seg.nii.gz",
+        ]
+        
+        gt_seg_file = None
+        for possible_file in possible_gt_files:
+            if possible_file.exists():
+                gt_seg_file = possible_file
+                break
+                
+        if gt_seg_file is None:
             print(f"Warning: GT segmentation not found for {case_name}")
             continue
             
         gt_seg = load_nifti(gt_seg_file)
         
         # Load one of the original modalities for visualization
-        t1_file = original_dir / f"{case_name}_t1.nii.gz"
-        if t1_file.exists():
-            t1_img = load_nifti(t1_file)
-        else:
-            t1_img = None
+        # Try different possible naming conventions
+        possible_t1_files = [
+            original_dir / f"{case_name}_t1.nii.gz",
+            original_dir / f"{case_name}-t1.nii.gz",
+            original_dir / f"{case_name}_t1n.nii.gz",
+            original_dir / f"{case_name}-t1n.nii.gz",
+        ]
+        
+        t1_img = None
+        for possible_file in possible_t1_files:
+            if possible_file.exists():
+                t1_img = load_nifti(possible_file)
+                break
         
         # Compute metrics
         metrics = compute_segmentation_metrics(pred_seg, gt_seg)

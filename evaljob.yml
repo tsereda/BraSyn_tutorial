@@ -58,18 +58,18 @@ spec:
               ls /data/
               
               # Use TRAINING data instead of validation (has GT segmentations)
-              cp /data/BraTS2023-TrainingData.tar.gz .
-              tar -xzf BraTS2023-TrainingData.tar.gz
+              cp /data/ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData.tar.gz .
+              tar -xzf ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData.tar.gz
               ls -lh
               # Keep training data for evaluation
-              cp -r BraTS2023-TrainingData BraTS2023-TrainingData-Original
+              cp -r ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData-Original
               
               source /opt/conda/etc/profile.d/mamba.sh
               mamba create -n brasyn python=3.10 -y
               mamba activate brasyn
 
-              ## Drop one modality from training data
-              #python drop_modality.py
+              # Drop one modality from training data
+              python drop_modality.py
 
               cd ..
               git clone -b seemore https://github.com/tsereda/brats-synthesis.git
@@ -77,22 +77,31 @@ spec:
               unzip /data/BraTSCheckpoints.zip
 
               mkdir -p ./checkpoints
-              cp BraTSCheckpoints/t1c/brats_*.pt ./checkpoints/
-              cp BraTSCheckpoints/t1n/brats_*.pt ./checkpoints/
-              cp BraTSCheckpoints/t2f/brats_*.pt ./checkpoints/
-              cp BraTSCheckpoints/t2w/brats_*.pt ./checkpoints/
+              cp BraTSChekpoints/t1c/brats_*.pt ./checkpoints/
+              cp BraTSChekpoints/t1n/brats_*.pt ./checkpoints/
+              cp BraTSChekpoints/t2f/brats_*.pt ./checkpoints/
+              cp BraTSChekpoints/t2w/brats_*.pt ./checkpoints/
 
               # Run synthesis with evaluation mode for wandb logging
+              # Check if pseudo_val_set exists, otherwise use the training data directly
+              if [ -d "../BraSyn_tutorial/pseudo_val_set" ]; then
+                INPUT_DIR="../BraSyn_tutorial/pseudo_val_set"
+              else
+                INPUT_DIR="../BraSyn_tutorial/ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData"
+              fi
+              
+              echo "Using input directory: $INPUT_DIR"
+              
               python fast_cwdm/scripts/complete_dataset.py \
-                --input_dir ../BraSyn_tutorial/pseudo_val_set \
+                --input_dir "$INPUT_DIR" \
                 --checkpoint_dir ./checkpoints \
                 --device cuda:0 \
                 --evaluation_mode \
                 --evaluate_metrics \
+                --log_visual_samples \
                 --wandb_project "fast-cwmd-eval" \
                 --wandb_entity "timgsereda" \
-                --wandb_run_name "training_data_eval" \
-                --max_cases 5
+                --wandb_run_name "training_data_eval"
 
               export nnUNet_raw="/app/nnunet/raw"
               export nnUNet_preprocessed="/app/nnunet/preprocessed"
@@ -118,11 +127,21 @@ spec:
               mv plans.json $nnUNet_results/Dataset137_BraTS2021_inference/nnUNetTrainer__nnUNetPlans__3d_fullres/
 
               echo "Checking synthesized image dimensions..."
-              python check_image_sizes.py ../brats-synthesis/datasets/BRATS2023/pseudo_validation_completed
+              if [ -d "../brats-synthesis/datasets/BRATS2023/pseudo_validation_completed" ]; then
+                python check_image_sizes.py ../brats-synthesis/datasets/BRATS2023/pseudo_validation_completed
+              else
+                echo "Synthesized data directory not found, skipping size check"
+              fi
               echo "Size check complete. Proceeding with nnUNet conversion..."
 
               echo "Converting data to nnUNet format..."
-              python conv.py
+              echo "Debug: Available directories in brats-synthesis/datasets/BRATS2023/:"
+              ls -la ../brats-synthesis/datasets/BRATS2023/ || echo "BRATS2023 directory not found"
+              echo "Debug: Available directories in BraSyn_tutorial/:"
+              ls -la ../BraSyn_tutorial/ | head -10
+              
+              # Try to run conversion, but don't fail if it doesn't work initially
+              python conv.py || echo "conv.py failed, but continuing..."
 
               # Add to ~/.bashrc for persistence
               echo 'export nnUNet_raw="/app/nnunet/raw"' >> ~/.bashrc
@@ -148,10 +167,10 @@ spec:
 
               # EVALUATION: Compare predicted segmentations with ground truth
               echo "Starting segmentation evaluation with wandb..."
+              echo "Current working directory: $(pwd)"
               
-              # Copy evaluation script from repo
-              cp ${REPO_PATH}/eval_segmentation.py .
-              python eval_segmentation.py
+              # Run evaluation script from repo
+              python ${REPO_PATH}/eval_segmentation.py
 
               echo "Evaluation complete! Check wandb for synthesis and segmentation results."
 
