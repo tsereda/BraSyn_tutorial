@@ -79,10 +79,10 @@ spec:
               unzip /data/BraTSChekpoints.zip
 
               mkdir -p ./checkpoints
-              cp BraTSChekpoints/t1c/brats_*.pt ./checkpoints/
-              cp BraTSChekpoints/t1n/brats_*.pt ./checkpoints/
-              cp BraTSChekpoints/t2f/brats_*.pt ./checkpoints/
-              cp BraTSChekpoints/t2w/brats_*.pt ./checkpoints/
+              cp BraTSCheckpoints/t1c/brats_*.pt ./checkpoints/
+              cp BraTSCheckpoints/t1n/brats_*.pt ./checkpoints/
+              cp BraTSCheckpoints/t2f/brats_*.pt ./checkpoints/
+              cp BraTSCheckpoints/t2w/brats_*.pt ./checkpoints/
 
               # Run synthesis with evaluation mode for wandb logging
               # Check if pseudo_val_set exists, otherwise use the training data directly
