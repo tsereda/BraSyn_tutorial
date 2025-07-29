@@ -134,7 +134,7 @@ def main():
                 shapes_summary = {}
                 issues_found = []
                 
-                for case_dir in sorted(case_dirs)[:10]:  # Check first 10 cases
+                for case_dir in sorted(case_dirs)[:30]:
                     case_path = os.path.join(input_path, case_dir)
                     shapes = analyze_case_directory(case_path)
                     
