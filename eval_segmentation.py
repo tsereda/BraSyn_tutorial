@@ -106,10 +106,10 @@ def main():
 
     # Original training data directory - try multiple possible locations
     possible_original_dirs = [
-        Path("ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData-Original"),
-        Path("../BraSyn_tutorial/ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData-Original"),
-        Path("BraTS2023-TrainingData-Original"),
-        Path("../BraSyn_tutorial/BraTS2023-TrainingData-Original")
+        Path("ASNR-MICCAI-BraTS2023-GLI-MET-TrainingDatal"),
+        Path("../BraSyn_tutorial/ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData"),
+        Path("BraTS2023-TrainingDatal"),
+        Path("../BraSyn_tutorial/BraTS2023-TrainingData")
     ]
     
     original_dir = None
