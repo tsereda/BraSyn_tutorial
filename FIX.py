@@ -4,6 +4,7 @@ import nibabel as nib
 import matplotlib.pyplot as plt
 from pathlib import Path
 import glob
+import random
 
 def load_nifti(path):
     """Load and return nifti data and the nifti object"""
@@ -24,204 +25,145 @@ def swap_labels_1_2(segmentation):
     
     return seg_copy
 
-def compute_dice_score(pred_mask, gt_mask):
-    """Compute Dice score between two binary masks"""
-    intersection = np.sum(pred_mask * gt_mask)
-    union = np.sum(pred_mask) + np.sum(gt_mask)
+def find_best_slice(segmentation):
+    """Find slice with most non-background content"""
+    slice_scores = []
+    for i in range(segmentation.shape[2]):
+        slice_data = segmentation[:, :, i]
+        # Count non-zero pixels
+        non_zero = np.sum(slice_data > 0)
+        slice_scores.append(non_zero)
     
-    if union > 0:
-        return (2.0 * intersection) / union
-    else:
-        return 1.0 if np.sum(pred_mask) == 0 else 0.0
+    # Return slice with most content
+    return np.argmax(slice_scores)
 
-def compare_performance(original_seg, swapped_seg, gt_seg, case_name):
-    """Compare original vs swapped performance"""
-    print(f"\n📊 PERFORMANCE COMPARISON: {case_name}")
-    print("=" * 60)
+def create_comparison_grid(file_examples):
+    """Create a 2x10 grid showing original vs swapped for 10 random files"""
     
-    # Compute Dice for both versions
-    print(f"{'Label':<8} {'Original':<10} {'Swapped':<10} {'Change':<10}")
-    print("-" * 50)
+    fig, axes = plt.subplots(2, 10, figsize=(25, 6))
     
-    total_orig = []
-    total_swap = []
-    
-    for label in [1, 2, 3, 4]:
-        # Original
-        orig_mask = (original_seg == label).astype(float)
-        gt_mask = (gt_seg == label).astype(float)
-        orig_dice = compute_dice_score(orig_mask, gt_mask)
+    for col, (filename, original_seg, swapped_seg) in enumerate(file_examples):
+        # Find best slice for visualization
+        best_slice = find_best_slice(original_seg)
         
-        # Swapped
-        swap_mask = (swapped_seg == label).astype(float)
-        swap_dice = compute_dice_score(swap_mask, gt_mask)
+        # Original (top row)
+        orig_slice = original_seg[:, :, best_slice]
+        axes[0, col].imshow(orig_slice, cmap='jet', vmin=0, vmax=4)
+        axes[0, col].set_title(f'{filename}\n(Original)', fontsize=8)
+        axes[0, col].axis('off')
         
-        change = swap_dice - orig_dice
-        total_orig.append(orig_dice)
-        total_swap.append(swap_dice)
-        
-        print(f"{label:<8} {orig_dice:.3f}     {swap_dice:.3f}     {change:+.3f}")
+        # Swapped (bottom row)
+        swap_slice = swapped_seg[:, :, best_slice]
+        axes[1, col].imshow(swap_slice, cmap='jet', vmin=0, vmax=4)
+        axes[1, col].set_title('After 1↔2 Swap', fontsize=8)
+        axes[1, col].axis('off')
     
-    orig_avg = np.mean(total_orig)
-    swap_avg = np.mean(total_swap)
-    
-    print("-" * 50)
-    print(f"{'AVERAGE':<8} {orig_avg:.3f}     {swap_avg:.3f}     {swap_avg-orig_avg:+.3f}")
-    
-    if swap_avg > orig_avg:
-        print(f"✅ IMPROVED by {swap_avg-orig_avg:.3f}!")
-        return True
-    else:
-        print(f"❌ Decreased by {orig_avg-swap_avg:.3f}")
-        return False
-
-def create_before_after_plot(original_seg, swapped_seg, gt_seg, case_name, slice_idx=None):
-    """Create before/after comparison plot"""
-    if slice_idx is None:
-        slice_idx = original_seg.shape[2] // 2
-    
-    fig, axes = plt.subplots(1, 3, figsize=(18, 6))
-    
-    # Original
-    orig_slice = original_seg[:, :, slice_idx]
-    axes[0].imshow(orig_slice, cmap='jet', vmin=0, vmax=4)
-    axes[0].set_title('Original Prediction')
-    axes[0].axis('off')
-    
-    # Swapped
-    swap_slice = swapped_seg[:, :, slice_idx]
-    axes[1].imshow(swap_slice, cmap='jet', vmin=0, vmax=4)
-    axes[1].set_title('After 1↔2 Swap')
-    axes[1].axis('off')
-    
-    # Ground Truth
-    gt_slice = gt_seg[:, :, slice_idx]
-    axes[2].imshow(gt_slice, cmap='jet', vmin=0, vmax=4)
-    axes[2].set_title('Ground Truth')
-    axes[2].axis('off')
-    
-    plt.suptitle(f'Label 1↔2 Swap Comparison: {case_name} (Slice {slice_idx})')
+    plt.suptitle('Random Sample: Label 1↔2 Swap Preview (10 Examples)', fontsize=16)
     plt.tight_layout()
     
-    # Save the plot
-    plot_file = f"swap_1_2_comparison_{case_name}.png"
-    plt.savefig(plot_file, dpi=150, bbox_inches='tight')
-    print(f"📸 Comparison saved as: {plot_file}")
+    # Save the grid
+    output_file = "label_swap_preview_grid.png"
+    plt.savefig(output_file, dpi=200, bbox_inches='tight')
+    print(f"📸 Preview grid saved as: {output_file}")
     
     return fig
 
 def main():
-    print("🔄 BraTS Label 1↔2 Swap Tool")
+    print("🎲 Label 1↔2 Swap Preview Tool")
     print("=" * 50)
     
-    # Find prediction files
-    pred_files = glob.glob("outputs/*.nii.gz")
+    # Find all segmentation files
+    input_dir = "nii_gz_files"
+    pred_files = glob.glob(f"{input_dir}/*.nii.gz")
     
     if not pred_files:
-        print("❌ No prediction files found in outputs/")
+        print(f"❌ No .nii.gz files found in {input_dir}/")
         return
     
-    print(f"Found {len(pred_files)} prediction files")
+    print(f"Found {len(pred_files)} total files")
     
-    # Check training data
-    training_data_dir = Path("ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData")
-    if not training_data_dir.exists():
-        print(f"❌ Training data directory not found: {training_data_dir}")
-        return
+    # Randomly select 10 files
+    if len(pred_files) < 10:
+        selected_files = pred_files
+        print(f"Using all {len(pred_files)} available files")
+    else:
+        selected_files = random.sample(pred_files, 10)
+        print(f"Randomly selected 10 files for preview")
     
-    # Test with first file
-    test_file = pred_files[0]
-    case_name = Path(test_file).name.replace('.nii.gz', '').replace('.nii', '')
+    print("\n🔄 Processing selected files...")
     
-    print(f"\n🧪 TESTING with: {case_name}")
+    file_examples = []
     
-    # Find ground truth
-    case_dir = training_data_dir / case_name
-    gt_file = case_dir / f"{case_name}-seg.nii.gz"
-    
-    if not gt_file.exists():
-        print(f"❌ Ground truth not found: {gt_file}")
-        return
-    
-    # Load files
-    original_seg, nii_obj = load_nifti(test_file)
-    gt_seg, _ = load_nifti(gt_file)
-    
-    print(f"Original shape: {original_seg.shape}")
-    
-    # Perform 1↔2 swap
-    swapped_seg = swap_labels_1_2(original_seg)
-    
-    # Compare performance
-    improved = compare_performance(original_seg, swapped_seg, gt_seg, case_name)
-    
-    # Create visualization
-    create_before_after_plot(original_seg, swapped_seg, gt_seg, case_name)
-    
-    if improved:
-        print(f"\n✅ The 1↔2 swap IMPROVED performance!")
-        response = input("\nProcess all files with 1↔2 swap? (y/n): ")
+    for i, seg_file in enumerate(selected_files):
+        filename = Path(seg_file).stem  # Remove .nii.gz extension
+        print(f"  {i+1}/10: {filename}")
         
-        if response.lower() == 'y':
-            # Create output directory
-            output_dir = Path("fixed_outputs")
-            output_dir.mkdir(exist_ok=True)
+        try:
+            # Load segmentation
+            seg_data, _ = load_nifti(seg_file)
             
-            print(f"\n🔄 Processing all {len(pred_files)} files...")
+            # Apply 1↔2 swap
+            swapped_seg = swap_labels_1_2(seg_data)
             
-            total_improvements = 0
+            # Store for visualization
+            file_examples.append((filename, seg_data, swapped_seg))
             
-            for i, pred_file in enumerate(pred_files):
-                case_name = Path(pred_file).name.replace('.nii.gz', '').replace('.nii', '')
-                print(f"Processing {i+1}/{len(pred_files)}: {case_name}")
-                
-                # Load original
-                seg_data, nii_obj = load_nifti(pred_file)
-                
-                # Swap labels 1↔2
+        except Exception as e:
+            print(f"    ❌ Error loading {filename}: {e}")
+            continue
+    
+    if not file_examples:
+        print("❌ No files could be processed!")
+        return
+    
+    print(f"\n📊 Creating comparison grid with {len(file_examples)} examples...")
+    
+    # Create the comparison visualization
+    create_comparison_grid(file_examples)
+    
+    print("\n" + "=" * 60)
+    print("🎉 PREVIEW COMPLETE!")
+    print("📸 Check 'label_swap_preview_grid.png' to see the results")
+    print("👀 Compare the top row (original) vs bottom row (swapped)")
+    print("🔍 Look for:")
+    print("   - Are labels 1 & 2 (different colors) swapping positions?")
+    print("   - Does the swapped version look more reasonable?")
+    print("   - Are labels 3 & 4 (core regions) staying the same?")
+    
+    response = input(f"\nIf the preview looks good, run the full batch on all {len(pred_files)} files? (y/n): ")
+    
+    if response.lower() == 'y':
+        print(f"\n🚀 Processing all {len(pred_files)} files...")
+        
+        # Create output directory
+        output_dir = Path("fixed_nii_gz_files")
+        output_dir.mkdir(exist_ok=True)
+        
+        successful = 0
+        for i, seg_file in enumerate(pred_files):
+            filename = Path(seg_file).name
+            print(f"Processing {i+1}/{len(pred_files)}: {filename}", end=" ... ")
+            
+            try:
+                # Load, swap, save
+                seg_data, nii_obj = load_nifti(seg_file)
                 fixed_seg = swap_labels_1_2(seg_data)
                 
-                # Save fixed version
-                output_path = output_dir / Path(pred_file).name
+                output_path = output_dir / filename
                 fixed_nii = nib.Nifti1Image(fixed_seg.astype(seg_data.dtype), 
-                                           nii_obj.affine, 
-                                           nii_obj.header)
+                                           nii_obj.affine, nii_obj.header)
                 nib.save(fixed_nii, output_path)
                 
-                # Quick check if this case improved
-                case_dir = training_data_dir / case_name
-                gt_file = case_dir / f"{case_name}-seg.nii.gz"
+                print("✅")
+                successful += 1
                 
-                if gt_file.exists():
-                    gt_seg, _ = load_nifti(gt_file)
-                    
-                    # Quick dice comparison
-                    orig_dice = []
-                    swap_dice = []
-                    
-                    for label in [1, 2, 3, 4]:
-                        orig_mask = (seg_data == label).astype(float)
-                        swap_mask = (fixed_seg == label).astype(float)
-                        gt_mask = (gt_seg == label).astype(float)
-                        
-                        orig_dice.append(compute_dice_score(orig_mask, gt_mask))
-                        swap_dice.append(compute_dice_score(swap_mask, gt_mask))
-                    
-                    if np.mean(swap_dice) > np.mean(orig_dice):
-                        total_improvements += 1
-                        print(f"  ✅ Improved!")
-                    else:
-                        print(f"  ➡️  No change")
-            
-            print(f"\n🎉 COMPLETED!")
-            print(f"📁 Fixed files saved to: {output_dir}/")
-            print(f"📈 {total_improvements}/{len(pred_files)} cases improved")
-            print(f"🎯 Use these fixed files for your final evaluation!")
-            
+            except Exception as e:
+                print(f"❌ Error: {e}")
+        
+        print(f"\n🎉 Batch processing complete! {successful}/{len(pred_files)} files processed")
+        print(f"📁 Fixed files saved to: {output_dir}/")
     else:
-        print(f"\n❌ The 1↔2 swap didn't help.")
-        print(f"💡 Your original predictions might already be optimal!")
-        print(f"   Consider using the original outputs/ files as-is.")
+        print("👋 Preview only - no batch processing performed")
 
 if __name__ == "__main__":
     main()
