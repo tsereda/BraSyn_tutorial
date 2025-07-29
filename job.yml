@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: 5-fast-cwdm-eval
+  name: 4-fast-cwdm-eval
 spec:
   backoffLimit: 0
   template:
@@ -54,8 +54,9 @@ spec:
           
               git clone https://github.com/tsereda/BraSyn_tutorial.git ${REPO_PATH}
               cd ${REPO_PATH}
-              cp /data/ASNR-MICCAI-BraTS2023-GLI-Challenge-ValidationData.zip .
-              7z x ASNR-MICCAI-BraTS2023-GLI-Challenge-ValidationData.zip -y -mmt=$(nproc)
+              cp /data/ASNR-MICCAI-BraTS2023-GLI-MET-Challenge-ValidationData.zip .
+              7z x ASNR-MICCAI-BraTS2023-GLI-MET-Challenge-ValidationData.zip -y -mmt=$(nproc)
+              rm -r ASNR-MICCAI-BraTS2023-GLI-MET-Challenge-ValidationData/BraTS-GLI-*
               source /opt/conda/etc/profile.d/mamba.sh
               mamba create -n brasyn python=3.10 -y
               mamba activate brasyn
@@ -155,7 +156,7 @@ spec:
             sizeLimit: 50Gi
         - name: data
           persistentVolumeClaim:
-            claimName: brats2025-5
+            claimName: brats2025-4
         - name: shm
           emptyDir:
             medium: Memory
