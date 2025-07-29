@@ -140,7 +140,7 @@ spec:
                   python ${REPO_PATH}/check_single_seg.py "$FIRST_PROCESSED_FILE"
               fi
 
-              sudo cp brasyn_validation_submission.zip /data/brasyn_validation_submission2.zip
+              sudo cp brasyn_validation_submission.zip /data/brasyn_validation_submission3.zip
               ls /data/
 
          
