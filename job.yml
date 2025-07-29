@@ -108,7 +108,7 @@ spec:
               mv plans.json $nnUNet_results/Dataset137_BraTS2021_inference/nnUNetTrainer__nnUNetPlans__3d_fullres/
 
               echo "Checking synthesized image dimensions..."
-              python check_image_sizes.py ./datasets/BRATS2023/pseudo_validation_completed
+              python check_image_sizes.py ../brats-synthesis/datasets/BRATS2023/pseudo_validation_completed
               echo "Size check complete. Proceeding with nnUNet conversion..."
 
               echo "Converting data to nnUNet format..."
