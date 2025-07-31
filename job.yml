@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: 4-fast-cwdm-eval
+  name: 5-fast-cwdm-eval
 spec:
   backoffLimit: 0
   template:
@@ -65,7 +65,7 @@ spec:
               mamba activate brasyn
 
               
-              python drop_modality.py
+              #python drop_modality.py
 
               cd ..
               git clone -b seemore https://github.com/tsereda/brats-synthesis.git
@@ -79,9 +79,11 @@ spec:
               cp BraTSCheckpoints/t2w/brats_*.pt ./checkpoints/
 
               python fast_cwdm/scripts/complete_dataset.py \
-                --input_dir ../BraSyn_tutorial/pseudo_val_set \
+                --input_dir ../BraSyn_tutorial/ASNR-MICCAI-BraTS2023-GLI-MET-ValidationData \
                 --checkpoint_dir ./checkpoints \
-                --device cuda:0
+                --device cuda:0 \
+                --evaluation_mode \
+                --evaluate_metrics
 
               export nnUNet_raw="/app/nnunet/raw"
               export nnUNet_preprocessed="/app/nnunet/preprocessed"
@@ -172,7 +174,7 @@ spec:
             sizeLimit: 50Gi
         - name: data
           persistentVolumeClaim:
-            claimName: brats2025-4
+            claimName: brats2025-5
         - name: shm
           emptyDir:
             medium: Memory
