@@ -12,8 +12,8 @@ def prepare_validation_submission():
     - Output: Properly formatted submission archive
     """
     
-    output_dir = "./outputs"
-    submission_dir = "fixed_zii_gz_files"
+    output_dir = "fixed_nii_gz_files"
+    submission_dir = "validation_submission"
     
     print("Preparing BraSyn Validation Submission...")
     
