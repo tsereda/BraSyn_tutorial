@@ -13,7 +13,7 @@ def prepare_validation_submission():
     """
     
     output_dir = "./outputs"
-    submission_dir = "./validation_submission"
+    submission_dir = "fixed_zii_gz_files"
     
     print("Preparing BraSyn Validation Submission...")
     
