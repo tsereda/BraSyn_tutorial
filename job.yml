@@ -78,12 +78,12 @@ spec:
               cp 200kCheckpoints/t2f/brats_*.pt ./checkpoints/
               cp 200kCheckpoints/t2w/brats_*.pt ./checkpoints/
 
-              python fast_cwdm/scripts/complete_dataset.py \
-                --input_dir ../BraSyn_tutorial/ASNR-MICCAI-BraTS2023-GLI-MET-ValidationData \
-                --checkpoint_dir ./checkpoints \
-                --device cuda:0 \
-                --evaluation_mode \
-                --evaluate_metrics
+              # python fast_cwdm/scripts/complete_dataset.py \
+              #   --input_dir ../BraSyn_tutorial/ASNR-MICCAI-BraTS2023-GLI-MET-ValidationData \
+              #   --checkpoint_dir ./checkpoints \
+              #   --device cuda:0 \
+              #   --evaluation_mode \
+              #   --evaluate_metrics
 
               export nnUNet_raw="/app/nnunet/raw"
               export nnUNet_preprocessed="/app/nnunet/preprocessed"
@@ -114,7 +114,8 @@ spec:
               echo "Size check complete. Proceeding with nnUNet conversion..."
 
               echo "Converting data to nnUNet format..."
-              python conv.py
+              python conv.py \
+              --input_dir "ASNR-MICCAI-BraTS2023-GLI-MET-ValidationData"
 
               # Add to ~/.bashrc for persistence
               echo 'export nnUNet_raw="/app/nnunet/raw"' >> ~/.bashrc
@@ -146,7 +147,7 @@ spec:
                   python ${REPO_PATH}/check_single_seg.py "$FIRST_PROCESSED_FILE"
               fi
 
-              sudo cp brasyn_validation_submission.zip /data/brasyn_validation_submission200k0.zip
+              sudo cp brasyn_validation_submission.zip /data/brasyn_validation_submissionREAL0.zip
               ls /data/
 
          

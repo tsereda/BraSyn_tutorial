@@ -72,17 +72,17 @@ spec:
               # python drop_modality.py
 
               cd ..
-              git clone -b seemore https://github.com/tsereda/brats-synthesis.git
+              git clone -b ssim-loss https://github.com/tsereda/brats-synthesis.git
               cd brats-synthesis
               echo "ls -lh /data/"
               ls -lh /data/
-              unzip /data/BraTSChekpoints.zip
+              unzip /data/400kCheckpoints.zip
 
               mkdir -p ./checkpoints
-              cp BraTSCheckpoints/t1c/brats_*.pt ./checkpoints/
-              cp BraTSCheckpoints/t1n/brats_*.pt ./checkpoints/
-              cp BraTSCheckpoints/t2f/brats_*.pt ./checkpoints/
-              cp BraTSCheckpoints/t2w/brats_*.pt ./checkpoints/
+              cp t1c/brats_*.pt ./checkpoints/
+              cp t1n/brats_*.pt ./checkpoints/
+              cp t2f/brats_*.pt ./checkpoints/
+              cp t2w/brats_*.pt ./checkpoints/
               
               python fast_cwdm/scripts/complete_dataset.py \
                 --input_dir "../BraSyn_tutorial/ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData" \
@@ -91,10 +91,10 @@ spec:
                 --evaluation_mode \
                 --evaluate_metrics \
                 --log_visual_samples \
-                --wandb_project "fast-cwmd-eval" \
+                --wandb_project "fast-cwmd-eval-random" \
                 --wandb_entity "timgsereda" \
-                --wandb_run_name "training_data_eval" \
-                --max_cases 3
+                --wandb_run_name "training_data_eval-random" \
+                --max_cases 250
 
               export nnUNet_raw="/app/nnunet/raw"
               export nnUNet_preprocessed="/app/nnunet/preprocessed"
@@ -134,7 +134,11 @@ spec:
               ls -la ../BraSyn_tutorial/ | head -10
               
               # Try to run conversion, but don't fail if it doesn't work initially
-              python conv.py || echo "conv.py failed, but continuing..."
+              # input ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData or /brats-synthesis/datasets/BRATS2023/pseudo_validation_completed
+              python ${REPO_PATH}/conv.py \
+              --input_dir "/brats-synthesis/datasets/BRATS2023/pseudo_validation_completed" \
+              --max_cases 250
+
 
               # Add to ~/.bashrc for persistence
               echo 'export nnUNet_raw="/app/nnunet/raw"' >> ~/.bashrc

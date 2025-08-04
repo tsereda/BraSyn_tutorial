@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import glob
 import random
+import argparse
 
 def load_nifti(path):
     """Load and return nifti data and the nifti object"""
@@ -37,7 +38,7 @@ def find_best_slice(segmentation):
     # Return slice with most content
     return np.argmax(slice_scores)
 
-def create_comparison_grid(file_examples):
+def create_comparison_grid(file_examples, input_dir_name):
     """Create a 2x10 grid showing original vs swapped for 10 random files"""
     
     fig, axes = plt.subplots(2, 10, figsize=(25, 6))
@@ -58,7 +59,7 @@ def create_comparison_grid(file_examples):
         axes[1, col].set_title('After 1↔2 Swap', fontsize=8)
         axes[1, col].axis('off')
     
-    plt.suptitle('Random Sample: Label 1↔2 Swap Preview (10 Examples)', fontsize=16)
+    plt.suptitle(f'Random Sample from "{input_dir_name}": Label 1↔2 Swap Preview (10 Examples)', fontsize=16)
     plt.tight_layout()
     
     # Save the grid
@@ -69,11 +70,16 @@ def create_comparison_grid(file_examples):
     return fig
 
 def main():
+    parser = argparse.ArgumentParser(description="Preview and apply a 1↔2 label swap on NIfTI segmentation files.")
+    parser.add_argument("input_dir", type=str, help="Path to the directory containing .nii.gz files.")
+    args = parser.parse_args()
+
+    input_dir = Path(args.input_dir)
+
     print("🎲 Label 1↔2 Swap Preview Tool")
     print("=" * 50)
     
     # Find all segmentation files
-    input_dir = "nii_gz_files"
     pred_files = glob.glob(f"{input_dir}/*.nii.gz")
     
     if not pred_files:
@@ -96,7 +102,7 @@ def main():
     
     for i, seg_file in enumerate(selected_files):
         filename = Path(seg_file).stem  # Remove .nii.gz extension
-        print(f"  {i+1}/10: {filename}")
+        print(f"  {i+1}/{len(selected_files)}: {filename}")
         
         try:
             # Load segmentation
@@ -119,7 +125,7 @@ def main():
     print(f"\n📊 Creating comparison grid with {len(file_examples)} examples...")
     
     # Create the comparison visualization
-    create_comparison_grid(file_examples)
+    create_comparison_grid(file_examples, input_dir.name)
     
     print("\n" + "=" * 60)
     print("🎉 PREVIEW COMPLETE!")
@@ -151,7 +157,7 @@ def main():
                 
                 output_path = output_dir / filename
                 fixed_nii = nib.Nifti1Image(fixed_seg.astype(seg_data.dtype), 
-                                           nii_obj.affine, nii_obj.header)
+                                            nii_obj.affine, nii_obj.header)
                 nib.save(fixed_nii, output_path)
                 
                 print("✅")
