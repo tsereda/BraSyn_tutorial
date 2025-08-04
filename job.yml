@@ -141,6 +141,7 @@ spec:
               fi
 
               python prepare_val_sub.py
+              python FIX.py validation_submission #needs to press y!! plz fix
 
               FIRST_PROCESSED_FILE=$(find ./validation_submission -name "*.nii.gz" | head -1)
               if [ -n "$FIRST_PROCESSED_FILE" ]; then
