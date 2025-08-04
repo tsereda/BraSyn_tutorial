@@ -1,7 +1,7 @@
 import multiprocessing
 import shutil
 import os
-import argparse  # Add this import
+import argparse
 from multiprocessing import Pool
 import SimpleITK as sitk
 import numpy as np
@@ -55,7 +55,7 @@ if __name__ == '__main__':
         except:
             print("Cannot list current directory")
         exit(1)
-   
+    
     task_id = 137
     task_name = "BraTS2021_inference"
     foldername = "Dataset%03.0d_%s" % (task_id, task_name)
@@ -76,7 +76,7 @@ if __name__ == '__main__':
         except:
             print("Cannot list directory contents")
         exit(1)
-   
+    
     print(f"Found {len(case_ids)} cases for inference")
     
     # ✅ APPLY MAX_CASES LIMIT IF SPECIFIED
@@ -100,36 +100,36 @@ if __name__ == '__main__':
     processed_count = 0
     for c in case_ids:
         print(f"Processing case: {c}")
-       
+        
         # Check if all 4 modalities exist
         t1n_file = join(brats_data_dir, c, c + "-t1n.nii.gz")
         t1c_file = join(brats_data_dir, c, c + "-t1c.nii.gz")
         t2w_file = join(brats_data_dir, c, c + "-t2w.nii.gz")
         t2f_file = join(brats_data_dir, c, c + "-t2f.nii.gz")
-       
+        
         missing_files = []
         if not os.path.exists(t1n_file): missing_files.append("t1n")
         if not os.path.exists(t1c_file): missing_files.append("t1c")
         if not os.path.exists(t2w_file): missing_files.append("t2w")
         if not os.path.exists(t2f_file): missing_files.append("t2f")
-       
+        
         if missing_files:
-            print(f"  ❌ Skipping {c} - missing: {missing_files}")
+            print(f"   ❌ Skipping {c} - missing: {missing_files}")
             continue
-           
+            
         # Copy files in nnUNet format
         shutil.copy(t1n_file, join(imagestr, c + '_0000.nii.gz'))
         shutil.copy(t1c_file, join(imagestr, c + '_0001.nii.gz'))
         shutil.copy(t2w_file, join(imagestr, c + '_0002.nii.gz'))
         shutil.copy(t2f_file, join(imagestr, c + '_0003.nii.gz'))
-       
+        
         processed_count += 1
-        print(f"  ✅ Converted {c}")
+        print(f"   ✅ Converted {c}")
     
     print(f"\n✅ Conversion complete!")
     print(f"📁 nnUNet inference data ready at: {imagestr}")
     print(f"Processed {processed_count} cases successfully")
-   
+    
     # Create symlink for nnUNet (if needed) - with error handling
     try:
         nnunet_dataset_path = join(nnUNet_raw, foldername)
@@ -140,4 +140,4 @@ if __name__ == '__main__':
             print(f"📁 nnUNet dataset already exists at: {nnunet_dataset_path}")
     except Exception as e:
         print(f"⚠️  Could not create nnUNet symlink: {e}")
-        print(f"   You can manually copy the dataset to your nnUNet_raw folder when ready.")
+        print(f"    You can manually copy the dataset to your nnUNet_raw folder when ready.")
