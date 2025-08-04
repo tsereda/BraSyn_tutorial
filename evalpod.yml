@@ -146,8 +146,7 @@ spec:
           # Try to run conversion, but don't fail if it doesn't work initially
           python ${REPO_PATH}/conv.py \
           --input_dir "ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData" \
-          --max_cases 250 \
-          --real_data_only
+          --max_cases 250
 
 
           # Add to ~/.bashrc for persistence
