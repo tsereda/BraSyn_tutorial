@@ -136,7 +136,7 @@ def main():
 
     all_dice_scores = {"dice_et": [], "dice_tc": [], "dice_wt": [], "dice_mean": []}
 
-    for pred_file in pred_files[:10]:  # Limit for testing
+    for pred_file in pred_files[:250]:  # Limit for testing
         # Extract case name properly by removing both .nii.gz extensions
         case_name = Path(pred_file).name.replace('.nii.gz', '').replace('.nii', '')
         print(f"Evaluating {case_name}")

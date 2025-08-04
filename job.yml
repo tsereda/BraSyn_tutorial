@@ -59,7 +59,7 @@ spec:
               cp /data/ASNR-MICCAI-BraTS2023-GLI-MET-ValidationData.tar.gz .
               tar -xzf ASNR-MICCAI-BraTS2023-GLI-MET-ValidationData.tar.gz
               ls -lh
-              sudo rm -r ASNR-MICCAI-BraTS2023-GLI-MET-ValidationData/BraTS-GLI-*
+              #sudo rm -r ASNR-MICCAI-BraTS2023-GLI-MET-ValidationData/BraTS-GLI-*
               source /opt/conda/etc/profile.d/mamba.sh
               mamba create -n brasyn python=3.10 -y
               mamba activate brasyn
@@ -70,13 +70,13 @@ spec:
               cd ..
               git clone -b seemore https://github.com/tsereda/brats-synthesis.git
               cd brats-synthesis
-              unzip /data/BraTSChekpoints.zip
+              unzip /data/200kCheckpoints.zip
 
               mkdir -p ./checkpoints
-              cp BraTSCheckpoints/t1c/brats_*.pt ./checkpoints/
-              cp BraTSCheckpoints/t1n/brats_*.pt ./checkpoints/
-              cp BraTSCheckpoints/t2f/brats_*.pt ./checkpoints/
-              cp BraTSCheckpoints/t2w/brats_*.pt ./checkpoints/
+              cp 200kCheckpoints/t1c/brats_*.pt ./checkpoints/
+              cp 200kCheckpoints/t1n/brats_*.pt ./checkpoints/
+              cp 200kCheckpoints/t2f/brats_*.pt ./checkpoints/
+              cp 200kCheckpoints/t2w/brats_*.pt ./checkpoints/
 
               python fast_cwdm/scripts/complete_dataset.py \
                 --input_dir ../BraSyn_tutorial/ASNR-MICCAI-BraTS2023-GLI-MET-ValidationData \
@@ -146,7 +146,7 @@ spec:
                   python ${REPO_PATH}/check_single_seg.py "$FIRST_PROCESSED_FILE"
               fi
 
-              sudo cp brasyn_validation_submission.zip /data/brasyn_validation_submission3.zip
+              sudo cp brasyn_validation_submission.zip /data/brasyn_validation_submission200k0.zip
               ls /data/
 
          

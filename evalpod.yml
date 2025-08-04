@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: 6-eval-fast-cwdm
+  name: 5-eval-fast-cwdm
 spec:
   nodeSelector:
     #topology.kubernetes.io/region: us-west
@@ -79,11 +79,10 @@ spec:
           mamba activate brasyn
 
           # Drop one modality from training data
-          python drop_modality.py ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData pseudo_val_set
-          #ASNR-MICCAI-BraTS2023-GLI-MET-ValidationData,pseudo_val_set
+          # python drop_modality.py
 
           cd ..
-          git clone -b seemore https://github.com/tsereda/brats-synthesis.git
+          git clone -b ssim-loss https://github.com/tsereda/brats-synthesis.git
           cd brats-synthesis
           echo "ls -lh /data/"
           ls -lh /data/
@@ -95,17 +94,17 @@ spec:
           cp BraTSCheckpoints/t2f/brats_*.pt ./checkpoints/
           cp BraTSCheckpoints/t2w/brats_*.pt ./checkpoints/
           
-          python fast_cwdm/scripts/complete_dataset.py \
-            --input_dir "../BraSyn_tutorial/pseudo_val_set" \
-            --checkpoint_dir ./checkpoints \
-            --device cuda:0 \
-            --evaluate_metrics \
-            --log_visual_samples \
-            --wandb_project "fast-cwmd-eval" \
-            --wandb_entity "timgsereda" \
-            --wandb_run_name "training_data_eval" \
-            --max_cases 10 \
-            --output_dir ./datasets/BRATS2023/pseudo_validation_completed
+          # python fast_cwdm/scripts/complete_dataset.py \
+          #   --input_dir "../BraSyn_tutorial/ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData" \
+          #   --checkpoint_dir ./checkpoints \
+          #   --device cuda:0 \
+          #   --evaluation_mode \
+          #   --evaluate_metrics \
+          #   --log_visual_samples \
+          #   --wandb_project "fast-cwmd-eval" \
+          #   --wandb_entity "timgsereda" \
+          #   --wandb_run_name "training_data_eval" \
+          #   --max_cases 250
 
           export nnUNet_raw="/app/nnunet/raw"
           export nnUNet_preprocessed="/app/nnunet/preprocessed"
@@ -131,8 +130,11 @@ spec:
           mv plans.json $nnUNet_results/Dataset137_BraTS2021_inference/nnUNetTrainer__nnUNetPlans__3d_fullres/
 
           echo "Checking synthesized image dimensions..."
-          python check_image_sizes.py ../brats-synthesis/datasets/BRATS2023/pseudo_validation_completed
-
+          if [ -d "../brats-synthesis/datasets/BRATS2023/pseudo_validation_completed" ]; then
+            python check_image_sizes.py ../brats-synthesis/datasets/BRATS2023/pseudo_validation_completed
+          else
+            echo "Synthesized data directory not found, skipping size check"
+          fi
           echo "Size check complete. Proceeding with nnUNet conversion..."
 
           echo "Converting data to nnUNet format..."
@@ -142,7 +144,11 @@ spec:
           ls -la ../BraSyn_tutorial/ | head -10
           
           # Try to run conversion, but don't fail if it doesn't work initially
-          python conv.py || echo "conv.py failed, but continuing..."
+          python ${REPO_PATH}/conv.py \
+          --input_dir "ASNR-MICCAI-BraTS2023-GLI-MET-TrainingData" \
+          --max_cases 250 \
+          --real_data_only
+
 
           # Add to ~/.bashrc for persistence
           echo 'export nnUNet_raw="/app/nnunet/raw"' >> ~/.bashrc
@@ -159,7 +165,7 @@ spec:
           ls -la ${REPO_PATH}/Dataset137_BraTS2021_inference/imagesTs/ | head -5
 
           echo "Running nnUNet prediction..."
-          nnUNetv2_predict -i "Dataset137_BraTS2021_inference/imagesTs" -o "./outputs" -d 137 -c 3d_fullres -f 5
+          nnUNetv2_predict -i "${REPO_PATH}/Dataset137_BraTS2021_inference/imagesTs" -o "./outputs" -d 137 -c 3d_fullres -f 5
 
           FIRST_SEG_FILE=$(find ./outputs -name "*.nii.gz" | head -1)
           if [ -n "$FIRST_SEG_FILE" ]; then
@@ -200,7 +206,7 @@ spec:
         sizeLimit: 50Gi
     - name: data
       persistentVolumeClaim:
-        claimName: brats2025-6
+        claimName: brats2025-5
     - name: shm
       emptyDir:
         medium: Memory

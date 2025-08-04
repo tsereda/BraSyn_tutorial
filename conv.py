@@ -1,6 +1,7 @@
 import multiprocessing
 import shutil
 import os
+import argparse  # Add this import
 from multiprocessing import Pool
 import SimpleITK as sitk
 import numpy as np
@@ -32,30 +33,75 @@ def convert_folder_with_preds_back_to_BraTS_labeling_convention(input_folder: st
     with multiprocessing.get_context("spawn").Pool(num_processes) as p:
         p.starmap(load_convert_labels_back_to_BraTS, zip(nii, [input_folder] * len(nii), [output_folder] * len(nii)))
 
-if __name__ == '__main__':  # Fixed: was **name**
-    # ✅ FIXED: Change to your actual completed validation directory
-    brats_data_dir = '../brats-synthesis/datasets/BRATS2023/pseudo_validation_completed'  # or wherever your synthesis outputs go
+if __name__ == '__main__':
+    # ✅ ADD ARGUMENT PARSING
+    parser = argparse.ArgumentParser(description='Convert BraTS data to nnUNet format')
+    parser.add_argument('--input_dir', required=True, help='Input directory with BraTS data')
+    parser.add_argument('--max_cases', type=int, default=None, help='Maximum number of cases to process')
+    args = parser.parse_args()
+    
+    # ✅ USE THE PARSED ARGUMENT INSTEAD OF HARDCODED PATH
+    brats_data_dir = args.input_dir
+    
+    print(f"Using input directory: {brats_data_dir}")
+    
+    # ✅ CHECK IF DIRECTORY EXISTS
+    if not os.path.exists(brats_data_dir):
+        print(f"ERROR: Directory {brats_data_dir} does not exist!")
+        print(f"Current working directory: {os.getcwd()}")
+        print("Available files/directories:")
+        try:
+            print(os.listdir('.'))
+        except:
+            print("Cannot list current directory")
+        exit(1)
    
     task_id = 137
-    task_name = "BraTS2021_inference"  # Changed name to indicate inference
+    task_name = "BraTS2021_inference"
     foldername = "Dataset%03.0d_%s" % (task_id, task_name)
     
     # setting up nnU-Net folders (images only - no labels for inference)
     out_base = join('./', foldername)
-    imagestr = join(out_base, "imagesTs")  # ✅ FIXED: Use imagesTs for test/inference
+    imagestr = join(out_base, "imagesTs")
     maybe_mkdir_p(imagestr)
-    # ❌ REMOVED: No labelstr needed for inference
     
     # Get case directories
-    case_ids = subdirs(brats_data_dir, prefix='BraTS', join=False)
+    try:
+        case_ids = subdirs(brats_data_dir, prefix='BraTS', join=False)
+    except Exception as e:
+        print(f"ERROR: Cannot read directories from {brats_data_dir}: {e}")
+        print("Directory contents:")
+        try:
+            print(os.listdir(brats_data_dir))
+        except:
+            print("Cannot list directory contents")
+        exit(1)
    
     print(f"Found {len(case_ids)} cases for inference")
+    
+    # ✅ APPLY MAX_CASES LIMIT IF SPECIFIED
+    if args.max_cases and len(case_ids) > args.max_cases:
+        case_ids = case_ids[:args.max_cases]
+        print(f"Limited to {len(case_ids)} cases due to max_cases={args.max_cases}")
+    
+    if len(case_ids) == 0:
+        print("ERROR: No BraTS cases found!")
+        print(f"Looking for directories starting with 'BraTS' in: {brats_data_dir}")
+        print("Available subdirectories:")
+        try:
+            all_subdirs = [d for d in os.listdir(brats_data_dir) if os.path.isdir(os.path.join(brats_data_dir, d))]
+            print(all_subdirs[:10])  # Show first 10
+        except:
+            print("Cannot list subdoirectories")
+        exit(1)
+    
     print(f"First few cases: {case_ids[:3]}")
     
+    processed_count = 0
     for c in case_ids:
         print(f"Processing case: {c}")
        
-        # Check if all 4 modalities exist - using os.path.exists instead of exists
+        # Check if all 4 modalities exist
         t1n_file = join(brats_data_dir, c, c + "-t1n.nii.gz")
         t1c_file = join(brats_data_dir, c, c + "-t1c.nii.gz")
         t2w_file = join(brats_data_dir, c, c + "-t2w.nii.gz")
@@ -77,14 +123,12 @@ if __name__ == '__main__':  # Fixed: was **name**
         shutil.copy(t2w_file, join(imagestr, c + '_0002.nii.gz'))
         shutil.copy(t2f_file, join(imagestr, c + '_0003.nii.gz'))
        
+        processed_count += 1
         print(f"  ✅ Converted {c}")
     
-    # ❌ REMOVED: No dataset.json generation needed for inference
-    # The pre-trained model already has its dataset.json
-   
     print(f"\n✅ Conversion complete!")
     print(f"📁 nnUNet inference data ready at: {imagestr}")
-    print(f"Found {len([f for f in os.listdir(imagestr) if f.endswith('_0000.nii.gz')])} cases")
+    print(f"Processed {processed_count} cases successfully")
    
     # Create symlink for nnUNet (if needed) - with error handling
     try:
@@ -92,6 +136,8 @@ if __name__ == '__main__':  # Fixed: was **name**
         if not os.path.exists(nnunet_dataset_path):
             os.symlink(os.path.abspath(out_base), nnunet_dataset_path)
             print(f"🔗 Created symlink: {nnunet_dataset_path}")
+        else:
+            print(f"📁 nnUNet dataset already exists at: {nnunet_dataset_path}")
     except Exception as e:
-        print(f"⚠️  Could not create nnUNet symlink (you may need to set up nnUNet paths): {e}")
+        print(f"⚠️  Could not create nnUNet symlink: {e}")
         print(f"   You can manually copy the dataset to your nnUNet_raw folder when ready.")
