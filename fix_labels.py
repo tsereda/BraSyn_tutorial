@@ -117,7 +117,6 @@ def main():
     print("🎲 Label 1↔2 Swap Preview Tool (Floating Point Fixed)")
     print("=" * 60)
     
-    # Find all segmentation files
     pred_files = glob.glob(f"{input_dir}/*.nii.gz")
     
     if not pred_files:
@@ -126,7 +125,6 @@ def main():
     
     print(f"Found {len(pred_files)} total files")
     
-    # Randomly select 10 files
     if len(pred_files) < 10:
         selected_files = pred_files
         print(f"Using all {len(pred_files)} available files")
@@ -139,21 +137,16 @@ def main():
     file_examples = []
     
     for i, seg_file in enumerate(selected_files):
-        filename = Path(seg_file).stem  # Remove .nii.gz extension
+        filename = Path(seg_file).stem
         print(f"  {i+1}/{len(selected_files)}: {filename}")
         
         try:
-            # Load segmentation
             seg_data, _ = load_nifti(seg_file)
-            
-            # Apply 1↔2 swap (now with floating point fix)
             swapped_seg = swap_labels_1_2(seg_data)
             
-            # Show analysis if requested
             if args.show_analysis:
                 analyze_file_before_after(seg_data, swapped_seg, filename)
             
-            # Store for visualization
             file_examples.append((filename, seg_data, swapped_seg))
             
         except Exception as e:
@@ -166,63 +159,49 @@ def main():
     
     print(f"\n📊 Creating comparison grid with {len(file_examples)} examples...")
     
-    # Create the comparison visualization
     create_comparison_grid(file_examples, input_dir.name)
     
     print("\n" + "=" * 60)
     print("🎉 PREVIEW COMPLETE!")
     print("📸 Check 'label_swap_preview_grid.png' to see the results")
-    print("👀 Compare the top row (original) vs bottom row (swapped)")
-    print("🔍 Look for:")
-    print("   - Are labels 1 & 2 (different colors) swapping positions?")
-    print("   - Does the swapped version look more reasonable?")
-    print("   - Are labels 3 (core regions) staying the same?")
     print("💡 NOTE: Floating point precision issues have been automatically fixed!")
     
-    response = input(f"\nIf the preview looks good, run the full batch on all {len(pred_files)} files? (y/n): ")
+    # The following code block replaces the user input section
+    print(f"\n🚀 Starting batch processing on all {len(pred_files)} files...")
     
-    if response.lower() == 'y':
-        print(f"\n🚀 Processing all {len(pred_files)} files...")
+    # Create output directory
+    output_dir = Path("fixed_nii_gz_files")
+    output_dir.mkdir(exist_ok=True)
+    
+    successful = 0
+    total_files_analyzed = 0
+    
+    for i, seg_file in enumerate(pred_files):
+        filename = Path(seg_file).name
+        print(f"Processing {i+1}/{len(pred_files)}: {filename}", end=" ... ")
         
-        # Create output directory
-        output_dir = Path("fixed_nii_gz_files")
-        output_dir.mkdir(exist_ok=True)
-        
-        successful = 0
-        total_files_analyzed = 0
-        
-        for i, seg_file in enumerate(pred_files):
-            filename = Path(seg_file).name
-            print(f"Processing {i+1}/{len(pred_files)}: {filename}", end=" ... ")
+        try:
+            seg_data, nii_obj = load_nifti(seg_file)
+            fixed_seg = swap_labels_1_2(seg_data)
             
-            try:
-                # Load, swap, save
-                seg_data, nii_obj = load_nifti(seg_file)
-                fixed_seg = swap_labels_1_2(seg_data)  # This now includes floating point fix
-                
-                output_path = output_dir / filename
-                
-                # Save as int16 to ensure clean integer labels
-                fixed_nii = nib.Nifti1Image(fixed_seg.astype(np.int16), 
-                                            nii_obj.affine, nii_obj.header)
-                nib.save(fixed_nii, output_path)
-                
-                # Quick verification
-                unique_labels = np.unique(fixed_seg)
-                print(f"✅ (labels: {unique_labels})")
-                successful += 1
-                total_files_analyzed += 1
-                
-            except Exception as e:
-                print(f"❌ Error: {e}")
-                total_files_analyzed += 1
-        
-        print(f"\n🎉 Batch processing complete! {successful}/{total_files_analyzed} files processed")
-        print(f"📁 Fixed files saved to: {output_dir}/")
-        print("💡 All files now have clean integer labels AND 1↔2 swap applied!")
-        print(f"🔍 Test with: python app/utils/check_single_seg.py {output_dir}/<filename>")
-    else:
-        print("👋 Preview only - no batch processing performed")
+            output_path = output_dir / filename
+            
+            fixed_nii = nib.Nifti1Image(fixed_seg.astype(np.int16), 
+                                        nii_obj.affine, nii_obj.header)
+            nib.save(fixed_nii, output_path)
+            
+            unique_labels = np.unique(fixed_seg)
+            print(f"✅ (labels: {unique_labels})")
+            successful += 1
+            total_files_analyzed += 1
+            
+        except Exception as e:
+            print(f"❌ Error: {e}")
+            total_files_analyzed += 1
+    
+    print(f"\n🎉 Batch processing complete! {successful}/{total_files_analyzed} files processed")
+    print(f"📁 Fixed files saved to: {output_dir}/")
+    print("💡 All files now have clean integer labels AND 1↔2 swap applied!")
 
 if __name__ == "__main__":
     main()
